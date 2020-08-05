@@ -1,0 +1,96 @@
+package log
+
+import (
+	"errors"
+	"fmt"
+	"sync"
+
+	"go.uber.org/zap"
+)
+
+type Provider func() Logger
+
+var (
+	providersMux  sync.RWMutex
+	providers     = map[string]Provider{}
+	defaultLogger *ZapTeeLogger
+)
+
+func Register(name string, p Provider) {
+	if p == nil {
+		panic("Logger: register provider is nil")
+	}
+
+	providersMux.Lock()
+	defer providersMux.Unlock()
+
+	if _, ok := providers[name]; ok {
+		panic("Logger: register provider twice for provider: " + name)
+	}
+	providers[name] = p
+}
+
+func NewLogger(providerName string) (Logger, error) {
+	providersMux.RLock()
+	defer providersMux.RUnlock()
+
+	provider, ok := providers[providerName]
+	if !ok {
+		return nil, fmt.Errorf("Logger: cannot found provider (%s)", providerName)
+	}
+
+	return provider(), nil
+}
+
+func Init() {
+	if defaultLogger == nil {
+		defaultLogger = NewZapTeeLogger()
+	}
+}
+
+func AddLogger(name string, provider string, config string) error {
+	Init()
+	return defaultLogger.AddLogger(name, provider, config)
+}
+
+func New(config string) error {
+	if defaultLogger == nil {
+		return errors.New("Logger: logger is nil, please run Init()")
+	}
+	return defaultLogger.Build(config)
+}
+
+func Debug(msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1)).Debug(msg, fields...)
+}
+
+func Info(msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1)).Info(msg, fields...)
+}
+
+func Warn(msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1)).Warn(msg, fields...)
+}
+
+func Error(msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1)).Error(msg, fields...)
+}
+
+func Fatal(msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1)).Fatal(msg, fields...)
+}
