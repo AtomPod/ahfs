@@ -1,0 +1,43 @@
+api:
+  defaultpagingsize: 16
+  maxpagingsize: 32
+database:
+  driver: sqlite3
+  maxidleconns: 0
+  maxlifetime: 0s
+  maxopenconns: 0
+  url: /db/gorm.db
+log:
+  base:
+    encoding: console
+  loggers:
+    console:
+      provider: console
+server:
+  appname: AHFS
+  avatarmaxheight: 256
+  avatarmaxwidth: 256
+  avataruploadpath: F:\GOWorkspace\services\ahfs\bin\data\avatar
+  domain: localhost
+  enableletsencrypt: false
+  fileuploadpath: F:\GOWorkspace\services\ahfs\bin\data\file
+  httpaddr: 0.0.0.0
+  httpport: "6270"
+  letsencryptdir: https
+  letsencrypttos: false
+  mode: debug
+  rooturl: http://localhost:6270
+service:
+  activecodelive: 15m0s
+  maxfilecapacitysize: 536870912
+  registeremailconfirm: true
+  resetpasswordcodelive: 10m0s
+session:
+  cookiename: ahfs_lalala
+  cookiepath: /
+  domain: ""
+  httponly: true
+  maxage: 86400
+  provider: memory
+  providerconfig: ""
+  secure: false

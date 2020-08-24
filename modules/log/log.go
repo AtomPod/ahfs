@@ -42,9 +42,21 @@ func NewLogger(providerName string) (Logger, error) {
 	return provider(), nil
 }
 
+func ZapLogger() *zap.Logger {
+	return defaultLogger.Logger
+}
+
 func Init() {
 	if defaultLogger == nil {
 		defaultLogger = NewZapTeeLogger()
+	}
+}
+
+func Sync() {
+	if defaultLogger != nil {
+		if err := defaultLogger.Sync(); err != nil {
+			Error("Cannot sync logger", zap.Error(err))
+		}
 	}
 }
 
@@ -58,6 +70,25 @@ func New(config string) error {
 		return errors.New("Logger: logger is nil, please run Init()")
 	}
 	return defaultLogger.Build(config)
+}
+
+func Reset() error {
+	if defaultLogger != nil {
+		if err := defaultLogger.Close(); err != nil {
+			return err
+		}
+	}
+	defaultLogger = NewZapTeeLogger()
+	return nil
+}
+
+func SetDefault(l *ZapTeeLogger) {
+	if defaultLogger != nil {
+		if err := defaultLogger.Close(); err != nil {
+			l.Warn("Cannot close logger", zap.Error(err))
+		}
+	}
+	defaultLogger = l
 }
 
 func Debug(msg string, fields ...zap.Field) {
@@ -93,4 +124,39 @@ func Fatal(msg string, fields ...zap.Field) {
 		return
 	}
 	defaultLogger.WithOptions(zap.AddCallerSkip(1)).Fatal(msg, fields...)
+}
+
+func DebugWithSkip(skip int, msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1+skip)).Debug(msg, fields...)
+}
+
+func InfoWithSkip(skip int, msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1+skip)).Info(msg, fields...)
+}
+
+func WarnWithSkip(skip int, msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1+skip)).Warn(msg, fields...)
+}
+
+func ErrorWithSkip(skip int, msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1+skip)).Error(msg, fields...)
+}
+
+func FatalWithSkip(skip int, msg string, fields ...zap.Field) {
+	if defaultLogger == nil {
+		return
+	}
+	defaultLogger.WithOptions(zap.AddCallerSkip(1+skip)).Fatal(msg, fields...)
 }

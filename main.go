@@ -1,17 +1,27 @@
+/*
+Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package main
 
 import (
-	"github.com/czhj/ahfs/modules/log"
-	"go.uber.org/zap"
+	"github.com/czhj/ahfs/cmd"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 func main() {
-	log.Init()
-	log.AddLogger("gogo", "console", `{
-		"level": "info",
-		"stacktracklevel": "warn"
-	}`)
-	log.New("{}")
-
-	log.Info("hello", zap.String("atom", "beta"))
+	cmd.Execute()
 }

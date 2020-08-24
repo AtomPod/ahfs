@@ -9,8 +9,8 @@ import (
 
 type FileLogger struct {
 	lumberjack.Logger
-	Level           string `json:"level"`
-	StacktrackLevel string `json:"stacktracklevel"`
+	Level           string `json:"level" yaml:"level"`
+	StacktrackLevel string `json:"stackTrackLevel" yaml:"stackTrackLevel"`
 	level           Level
 	stacktracklevel Level
 }
@@ -25,7 +25,12 @@ func (l *FileLogger) Init(config string) error {
 	}
 
 	l.level = NameToLevel(l.Level)
-	l.stacktracklevel = NameToLevel(l.StacktrackLevel)
+
+	if len(l.StacktrackLevel) == 0 {
+		l.stacktracklevel = ErrorLevel
+	} else {
+		l.stacktracklevel = NameToLevel(l.StacktrackLevel)
+	}
 	return nil
 }
 

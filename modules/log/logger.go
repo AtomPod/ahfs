@@ -27,7 +27,7 @@ type Logger interface {
 
 type zapTeeLoggerConfig struct {
 	zapcore.EncoderConfig
-	Encoding string `json:"encoding"`
+	Encoding string `json:"encoding" yaml:"encoding"`
 }
 
 type ZapTeeLogger struct {
@@ -76,20 +76,21 @@ func (l *ZapTeeLogger) Build(config string) error {
 
 	var zapconfig zapTeeLoggerConfig
 	zapconfig.EncoderConfig = zap.NewProductionEncoderConfig()
-	zapconfig.Encoding = "json"
+	zapconfig.Encoding = "console"
+	zapconfig.EncodeTime = zapcore.RFC3339TimeEncoder
 
 	if err := json.Unmarshal([]byte(config), &zapconfig); err != nil {
 		return err
 	}
 
-	encoder := zapcore.NewJSONEncoder
-	if zapconfig.Encoding == "console" {
-		encoder = zapcore.NewConsoleEncoder
+	encoder := zapcore.NewConsoleEncoder
+	if zapconfig.Encoding == "json" {
+		encoder = zapcore.NewJSONEncoder
 	}
 
-	var stacktrackLevel Level = WarnLevel
+	var stacktrackLevel Level = ErrorLevel
 	var cores []zapcore.Core
-	for name, logger := range l.loggers {
+	for _, logger := range l.loggers {
 		syncer := zapcore.AddSync(logger)
 		level := l.levelToZap(logger.GetLevel())
 		enc := encoder(zapconfig.EncoderConfig)
@@ -97,9 +98,6 @@ func (l *ZapTeeLogger) Build(config string) error {
 			return l <= level
 		})
 		core := zapcore.NewCore(enc, syncer, levelEnabler)
-		core = core.With([]zapcore.Field{
-			zap.Namespace(name),
-		})
 		cores = append(cores, core)
 
 		if stacktrackLevel > logger.GetStacktrackLevel() {
