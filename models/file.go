@@ -241,7 +241,7 @@ func tryUploadFile(e *gorm.DB, u *User, p *File, header *multipart.FileHeader) (
 		return "", nil, err
 	}
 
-	result := e.Exec("UPDATE users SET used_file_capacity=used_file_capactiy+? WHERE id=? AND ((used_file_capacity + ?) <= max_file_capacity)", header.Size, u.ID, header.Size)
+	result := e.Exec("UPDATE users SET used_file_capacity=used_file_capacity+? WHERE id=? AND ((used_file_capacity + ?) <= max_file_capacity)", header.Size, u.ID, header.Size)
 	if err := result.Error; err != nil {
 		return "", nil, err
 	}
