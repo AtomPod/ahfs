@@ -100,16 +100,16 @@ func (err ErrFileUnlockFailed) Error() string {
 	return fmt.Sprintf("file cannot unlock, maybe timeout or lock id is incorret [id: %d, lockID: %s]", err.ID, err.LockID)
 }
 
-type ErrFileMaxSizeLimit struct {
+type ErrUserMaxFileCapacityLimit struct {
 	UserID uint
 }
 
 func IsErrFileMaxSizeLimit(err error) bool {
-	_, ok := err.(ErrFileMaxSizeLimit)
+	_, ok := err.(ErrUserMaxFileCapacityLimit)
 	return ok
 }
 
-func (err ErrFileMaxSizeLimit) Error() string {
+func (err ErrUserMaxFileCapacityLimit) Error() string {
 	return fmt.Sprintf("user file capacity is fulled [id: %d]", err.UserID)
 }
 

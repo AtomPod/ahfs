@@ -39,7 +39,7 @@ func UploadFile(c *context.APIContext) {
 		return
 	}
 
-	file, err := models.TryUploadFile(c.User, parentFile, *fileHeader)
+	file, err := models.TryUploadFile(c.User, parentFile, fileHeader)
 	if err != nil {
 		if models.IsErrFileNotDirectory(err) {
 			c.Error(http.StatusBadRequest, err)

@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,6 +13,7 @@ import (
 	"github.com/czhj/ahfs/modules/locker"
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
+	"github.com/czhj/ahfs/modules/utils"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 )
@@ -33,7 +36,7 @@ type File struct {
 	FileName string
 
 	FileType FileType
-	FileSize uint64
+	FileSize int64
 
 	Owner    uint
 	ParentID uint
@@ -180,6 +183,95 @@ func deleteFile(e *gorm.DB, f *File) error {
 	}
 
 	return nil
+}
+
+func TryUploadFile(u *User, p *File, header *multipart.FileHeader) (*File, error) {
+	uid := u.ID
+	id, err := LockUserFile(context.Background(), u.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := UnlockUserFile(context.Background(), uid, id); err != nil {
+			log.Error("Failed to unlock user file", zap.Uint("id", u.ID), zap.Uint("uid", uid), zap.Error(err))
+		}
+	}()
+
+	tx := engine.Begin()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	localPath, file, err := tryUploadFile(tx, u, p, header)
+	if err != nil {
+		if len(localPath) != 0 {
+			if err := os.Remove(localPath); err != nil {
+				log.Error("Failed to remove local file", zap.String("path", localPath), zap.Error(err))
+			}
+		}
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+func tryUploadFile(e *gorm.DB, u *User, p *File, header *multipart.FileHeader) (string, *File, error) {
+
+	if !p.IsDir() {
+		return "", nil, ErrFileNotDirectory{ID: p.ID, Path: p.FilePath()}
+	}
+
+	file := &File{
+		FileID:   utils.GenerateFileID(u.ID),
+		FileDir:  p.FilePath(),
+		FileName: header.Filename,
+		FileSize: header.Size,
+		FileType: FileTypeFile,
+		Owner:    u.ID,
+		ParentID: p.ID,
+	}
+
+	err := e.Create(file).Error
+	if err != nil {
+		return "", nil, err
+	}
+
+	result := e.Exec("UPDATE users SET used_file_capacity=used_file_capactiy+? WHERE id=? AND ((used_file_capacity + ?) <= max_file_capacity)", header.Size, u.ID, header.Size)
+	if err := result.Error; err != nil {
+		return "", nil, err
+	}
+
+	if result.RowsAffected == 0 {
+		return "", nil, ErrUserMaxFileCapacityLimit{UserID: u.ID}
+	}
+
+	localPath := file.LocalPath()
+	if err := os.MkdirAll(filepath.Dir(localPath), os.ModePerm); err != nil {
+		return "", nil, fmt.Errorf("Failed to run MkdirAll [%s]: %v", filepath.Dir(localPath), err)
+	}
+
+	remoteFile, err := header.Open()
+	if err != nil {
+		return "", nil, fmt.Errorf("Failed to open remote file: %v", err)
+	}
+	defer remoteFile.Close()
+
+	localFile, err := os.Create(localPath)
+	if err != nil {
+		return "", nil, fmt.Errorf("Failed to create local file [%s]: %v", localPath, err)
+	}
+	defer localFile.Close()
+
+	if _, err := io.Copy(localFile, remoteFile); err != nil {
+		return localPath, nil, fmt.Errorf("Failed to copy remote file to local file [%s]: %v", localPath, err)
+	}
+
+	return localPath, file, nil
 }
 
 func LockUserFile(ctx context.Context, uid uint) (id string, err error) {

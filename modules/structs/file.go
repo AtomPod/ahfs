@@ -9,7 +9,7 @@ type File struct {
 	FileName  string    `json:"filename"`
 	FileDir   string    `json:"path"`
 	IsDir     bool      `json:"is_dir"`
-	FileSize  uint64    `json:"size"`
+	FileSize  int64     `json:"size"`
 	Owner     uint      `json:"owner"`
 	ParentID  uint      `json:"parent_id"`
 }
