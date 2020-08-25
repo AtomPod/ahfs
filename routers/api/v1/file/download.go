@@ -19,8 +19,8 @@ func DownloadFile(c *context.APIContext) {
 	}
 
 	form := &DownloadFileForm{}
-	if err := c.Bind(form); err != nil {
-		c.Error(http.StatusBadGateway, err)
+	if err := c.BindUri(form); err != nil {
+		c.Error(http.StatusBadRequest, err)
 		return
 	}
 

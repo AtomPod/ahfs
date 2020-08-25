@@ -25,9 +25,15 @@ func RegisterRoutes(e *gin.RouterGroup) {
 
 		files := v1.Group("/files")
 		{
-			files.POST("", context.APIContextWrapper(file.UploadFile))
 			files.GET("/:file_id/directory", context.APIContextWrapper(file.ReadDirectory))
 			files.GET("/:file_id", context.APIContextWrapper(file.DownloadFile))
+			files.GET("", context.APIContextWrapper(file.GetUserRootDirectory))
+
+			files.POST("", context.APIContextWrapper(file.UploadFile))
+			files.POST("/:file_id/rename", context.APIContextWrapper(file.RenameFile))
+			files.POST("/:file_id/move", context.APIContextWrapper(file.MoveFile))
+
+			files.DELETE("/:file_id", context.APIContextWrapper(file.DeleteFile))
 		}
 	}
 }

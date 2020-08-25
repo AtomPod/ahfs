@@ -42,6 +42,10 @@ type File struct {
 	ParentID uint
 }
 
+func (f *File) IsRoot() bool {
+	return f.ParentID == 0 && f.FileID == fmt.Sprintf("%d-root", f.Owner)
+}
+
 func (f *File) IsDir() bool {
 	return f.FileType == FileTypeDir
 }
@@ -60,7 +64,7 @@ func (f *File) ReadDir() ([]*File, error) {
 	}
 
 	files := make([]*File, 0)
-	err := engine.Where("parent_id=?", files).Find(&files).Error
+	err := engine.Where("parent_id=?", f.ID).Find(&files).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil
@@ -73,7 +77,7 @@ func (f *File) ReadDir() ([]*File, error) {
 func CreateUserRootFile(u *User) *File {
 	return &File{
 		FileID:   fmt.Sprintf("%d-root", u.ID),
-		FileDir:  "/",
+		FileName: "/",
 		FileType: FileTypeDir,
 		ParentID: 0,
 		Owner:    u.ID,
@@ -304,6 +308,10 @@ func moveFile(e *gorm.DB, f *File, dir *File) error {
 		return ErrFileParentNotDirectory{ID: dir.ID, Path: dir.FilePath()}
 	}
 
+	if f.IsRoot() {
+		return ErrModifyRootFile{ID: f.ID, Owner: f.Owner}
+	}
+
 	f.ParentID = dir.ID
 	f.FileDir = dir.FilePath()
 	if err := e.Save(f).Error; err != nil {
@@ -328,7 +336,7 @@ func moveFile(e *gorm.DB, f *File, dir *File) error {
 
 func adjustFilepath(e *gorm.DB, f *File, p *File) error {
 	f.FileDir = p.FilePath()
-	result := e.Where("id=?", f.ID).UpdateColumns(map[string]interface{}{
+	result := e.Model(&File{}).Where("id=?", f.ID).UpdateColumns(map[string]interface{}{
 		"file_dir": f.FileDir,
 	})
 
@@ -377,8 +385,11 @@ func RenameFile(f *File) error {
 }
 
 func renameFile(e *gorm.DB, f *File) error {
+	if f.IsRoot() {
+		return ErrModifyRootFile{ID: f.ID, Owner: f.Owner}
+	}
 
-	err := e.Where("id=?", f.ID).UpdateColumns(map[string]interface{}{
+	err := e.Model(&File{}).Where("id=?", f.ID).UpdateColumns(map[string]interface{}{
 		"file_name": f.FileName,
 	}).Error
 
