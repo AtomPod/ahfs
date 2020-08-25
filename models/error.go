@@ -73,6 +73,20 @@ func (err ErrFileNotDirectory) Error() string {
 	return fmt.Sprintf("path is not a directory [id: %d, path: %s]", err.ID, err.Path)
 }
 
+type ErrFileParentNotDirectory struct {
+	ID   uint
+	Path string
+}
+
+func IsErrFileParentNotDirectory(err error) bool {
+	_, ok := err.(ErrFileParentNotDirectory)
+	return ok
+}
+
+func (err ErrFileParentNotDirectory) Error() string {
+	return fmt.Sprintf("parent is not a directory [id: %d, path: %s]", err.ID, err.Path)
+}
+
 type ErrFileLocked struct {
 	ID uint
 }

@@ -274,6 +274,135 @@ func tryUploadFile(e *gorm.DB, u *User, p *File, header *multipart.FileHeader) (
 	return localPath, file, nil
 }
 
+func MoveFile(f *File, dir *File) error {
+	uid := f.Owner
+	id, err := LockUserFile(context.Background(), uid)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := UnlockUserFile(context.Background(), uid, id); err != nil {
+			log.Error("Failed to unlock user file", zap.Uint("id", uid), zap.Uint("uid", uid), zap.Error(err))
+		}
+	}()
+
+	tx := engine.Begin()
+	if err := tx.Error; err != nil {
+		return err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	if err := moveFile(tx, f, dir); err != nil {
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func moveFile(e *gorm.DB, f *File, dir *File) error {
+	if !dir.IsDir() {
+		return ErrFileParentNotDirectory{ID: dir.ID, Path: dir.FilePath()}
+	}
+
+	f.ParentID = dir.ID
+	f.FileDir = dir.FilePath()
+	if err := e.Save(f).Error; err != nil {
+		return err
+	}
+
+	if f.IsDir() {
+		files, err := f.ReadDir()
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			if err := adjustFilepath(e, file, f); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func adjustFilepath(e *gorm.DB, f *File, p *File) error {
+	f.FileDir = p.FilePath()
+	result := e.Where("id=?", f.ID).UpdateColumns(map[string]interface{}{
+		"file_dir": f.FileDir,
+	})
+
+	if err := result.Error; err != nil {
+		return err
+	}
+
+	if f.IsDir() {
+		files, err := f.ReadDir()
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			if err := adjustFilepath(e, file, f); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func RenameFile(f *File) error {
+	uid := f.Owner
+	id, err := LockUserFile(context.Background(), uid)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := UnlockUserFile(context.Background(), uid, id); err != nil {
+			log.Error("Failed to unlock user file", zap.Uint("id", uid), zap.Uint("uid", uid), zap.Error(err))
+		}
+	}()
+
+	tx := engine.Begin()
+	if err := tx.Error; err != nil {
+		return err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	if err := renameFile(tx, f); err != nil {
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func renameFile(e *gorm.DB, f *File) error {
+
+	err := e.Where("id=?", f.ID).UpdateColumns(map[string]interface{}{
+		"file_name": f.FileName,
+	}).Error
+
+	if err != nil {
+		return err
+	}
+
+	if f.IsDir() {
+		files, err := f.ReadDir()
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			if err := adjustFilepath(e, file, f); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+
+}
+
 func LockUserFile(ctx context.Context, uid uint) (id string, err error) {
 	key := fmt.Sprintf("user-%d-file", uid)
 	return locker.Lock(ctx, key)

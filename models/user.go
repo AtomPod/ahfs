@@ -229,7 +229,11 @@ func deleteUser(e *gorm.DB, u *User) error {
 	if err != nil {
 		return err
 	}
-	defer UnlockUserFile(context.Background(), u.ID, id)
+	defer func() {
+		if err := UnlockUserFile(context.Background(), u.ID, id); err != nil {
+			log.Error("Failed to unlock user file", zap.Uint("user_id", u.ID), zap.Error(err))
+		}
+	}()
 
 	if err := deleteFile(e, root); err != nil {
 		return err
