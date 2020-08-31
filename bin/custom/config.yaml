@@ -1,6 +1,11 @@
 api:
   defaultpagingsize: 16
   maxpagingsize: 32
+cache:
+  adapter: memory
+  enabled: true
+  interval: 1m0s
+  ttl: 24h0m0s
 database:
   driver: sqlite3
   maxidleconns: 0
@@ -12,7 +17,22 @@ log:
     encoding: console
   loggers:
     console:
+      level: debug
       provider: console
+mailer:
+  certfile: ""
+  enabled: true
+  from: ""
+  host: smtp.qq.com:465
+  istlsenable: false
+  keyfile: ""
+  password: jqquapwzvqctbbed
+  queuelength: 512
+  sendasplaintext: false
+  skipverify: true
+  subjectprefix: '[ahfs]'
+  usecertificate: false
+  username: 1062008365@qq.com
 server:
   appname: AHFS
   avatarmaxheight: 256

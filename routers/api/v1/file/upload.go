@@ -8,11 +8,12 @@ import (
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/context"
 	"github.com/czhj/ahfs/modules/convert"
+	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 )
 
 func UploadFile(c *context.APIContext) {
 	if c.User == nil {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
@@ -32,7 +33,7 @@ func UploadFile(c *context.APIContext) {
 	parentFile, err := models.GetFileByID(uint(parentID), c.User.ID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileNotExist, err)
 			return
 		}
 		c.InternalServerError(err)
@@ -42,9 +43,9 @@ func UploadFile(c *context.APIContext) {
 	file, err := models.TryUploadFile(c.User, parentFile, fileHeader)
 	if err != nil {
 		if models.IsErrFileNotDirectory(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileNotDirError, err)
 		} else if models.IsErrFileMaxSizeLimit(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileStorageFulled, err)
 		} else {
 			c.InternalServerError(err)
 		}

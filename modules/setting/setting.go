@@ -132,7 +132,7 @@ func SetCustomPath() {
 func NewSetting() {
 
 	for i := range CustomConfigPaths {
-		viper.SetConfigName(CustomConfigPaths[i])
+		viper.AddConfigPath(CustomConfigPaths[i])
 	}
 
 	viper.SetConfigName(CustomConfigName)
@@ -257,8 +257,10 @@ func SaveSetting() {
 }
 
 func NewServices() {
-	newDBService()
 	newLogService()
+	newDBService()
+	newCacheService()
 	newSessionService()
+	newMailService()
 	newService()
 }

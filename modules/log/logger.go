@@ -95,7 +95,7 @@ func (l *ZapTeeLogger) Build(config string) error {
 		level := l.levelToZap(logger.GetLevel())
 		enc := encoder(zapconfig.EncoderConfig)
 		levelEnabler := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
-			return l <= level
+			return l >= level
 		})
 		core := zapcore.NewCore(enc, syncer, levelEnabler)
 		cores = append(cores, core)

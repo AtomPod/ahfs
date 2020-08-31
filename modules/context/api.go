@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/czhj/ahfs/modules/log"
+	"github.com/czhj/ahfs/routers/api/v1/errcode"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -19,9 +20,9 @@ type APIContext struct {
 }
 
 type APIResult struct {
-	Code  int         `json:"code"`
-	Data  interface{} `json:"data,omitempty"`
-	Error *APIError   `json:"error,omitempty"`
+	Code  errcode.ErrorCode `json:"code"`
+	Data  interface{}       `json:"data,omitempty"`
+	Error *APIError         `json:"error,omitempty"`
 }
 
 type APIError struct {
@@ -53,22 +54,22 @@ func (ctx *APIContext) File(filename string, localPath string) {
 		})
 }
 
-func (ctx *APIContext) JSON(status int, obj interface{}) {
+func (ctx *APIContext) JSON(status int, code errcode.ErrorCode, obj interface{}) {
 	ctx.Context.JSON(status, APIResult{
-		Code: status,
+		Code: code,
 		Data: obj,
 	})
 }
 
 func (ctx *APIContext) OK(data interface{}) {
-	ctx.JSON(http.StatusOK, data)
+	ctx.JSON(http.StatusOK, errcode.OK, data)
 }
 
-func (ctx *APIContext) NotFound(err error) {
-	ctx.Error(http.StatusNotFound, err)
+func (ctx *APIContext) NotFound(code errcode.ErrorCode, err error) {
+	ctx.Error(http.StatusNotFound, code, err)
 }
 
-func (ctx *APIContext) Error(status int, obj interface{}) {
+func (ctx *APIContext) Error(status int, code errcode.ErrorCode, obj interface{}) {
 
 	var message string
 	if err, ok := obj.(error); ok {
@@ -86,7 +87,7 @@ func (ctx *APIContext) Error(status int, obj interface{}) {
 	}
 
 	ctx.Context.JSON(status, APIResult{
-		Code: status,
+		Code: code,
 		Error: &APIError{
 			Message: message,
 		},
@@ -95,7 +96,7 @@ func (ctx *APIContext) Error(status int, obj interface{}) {
 }
 
 func (ctx *APIContext) InternalServerError(err error) {
-	ctx.Error(http.StatusInternalServerError, err)
+	ctx.Error(http.StatusInternalServerError, errcode.InternalServerError, err)
 }
 
 func APIContexter() gin.HandlerFunc {

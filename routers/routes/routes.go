@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/czhj/ahfs/modules/templates"
 	"github.com/gin-contrib/gzip"
 
 	"github.com/czhj/ahfs/modules/context"
@@ -11,6 +12,7 @@ import (
 	"github.com/czhj/ahfs/modules/session"
 	"github.com/czhj/ahfs/modules/setting"
 	v1 "github.com/czhj/ahfs/routers/api/v1"
+	"github.com/czhj/ahfs/services/mailer"
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -41,6 +43,8 @@ func NewEngine() *gin.Engine {
 	}))
 
 	engine.Use(context.Contexter())
+
+	mailer.InitMailTemplate(templates.Mailer())
 
 	return engine
 }

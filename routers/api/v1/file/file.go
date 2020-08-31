@@ -6,6 +6,7 @@ import (
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/convert"
 	api "github.com/czhj/ahfs/modules/structs"
+	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 
 	"github.com/czhj/ahfs/modules/context"
 )
@@ -20,19 +21,19 @@ type ReadDirectoryForm struct {
 
 func ReadDirectory(c *context.APIContext) {
 	if c.User == nil {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
 	uriForm := &ReadDirectoryUriForm{}
 	if err := c.BindUri(uriForm); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
 	form := &ReadDirectoryForm{}
 	if err := c.Bind(form); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
@@ -44,7 +45,7 @@ func ReadDirectory(c *context.APIContext) {
 	directory, err := models.GetFileByID(uriForm.FileID, userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -54,7 +55,7 @@ func ReadDirectory(c *context.APIContext) {
 	files, err := directory.ReadDir()
 	if err != nil {
 		if models.IsErrFileNotDirectory(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileNotDirError, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -75,7 +76,7 @@ type UserRootDirForm struct {
 
 func GetUserRootDirectory(c *context.APIContext) {
 	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
@@ -83,7 +84,7 @@ func GetUserRootDirectory(c *context.APIContext) {
 
 	if c.IsAdmin() {
 		if err := c.Bind(form); err != nil {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 			return
 		}
 	}
@@ -96,7 +97,7 @@ func GetUserRootDirectory(c *context.APIContext) {
 	root, err := models.GetUserRootFile(userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -105,8 +106,8 @@ func GetUserRootDirectory(c *context.APIContext) {
 
 	files, err := root.ReadDir()
 	if err != nil {
-		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+		if models.IsErrFileNotDirectory(err) {
+			c.Error(http.StatusNotFound, ecode.FileNotDirError, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -130,19 +131,19 @@ type RenameFileForm struct {
 
 func RenameFile(c *context.APIContext) {
 	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
 	uriform := &RenameFileUriForm{}
 	if err := c.BindUri(uriform); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
 	form := &RenameFileForm{}
 	if err := c.Bind(form); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
@@ -154,7 +155,7 @@ func RenameFile(c *context.APIContext) {
 	file, err := models.GetFileByID(uriform.FileID, userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -164,7 +165,7 @@ func RenameFile(c *context.APIContext) {
 	file.FileName = form.FileName
 	if err := models.RenameFile(file); err != nil {
 		if models.IsErrModifyRootFile(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileRootOperateError, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -180,13 +181,13 @@ type DeleteFileForm struct {
 
 func DeleteFile(c *context.APIContext) {
 	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
 	form := &DeleteFileForm{}
 	if err := c.BindUri(form); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
@@ -198,7 +199,7 @@ func DeleteFile(c *context.APIContext) {
 	file, err := models.GetFileByID(form.FileID, userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -223,19 +224,19 @@ type MoveFileForm struct {
 
 func MoveFile(c *context.APIContext) {
 	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
 	uriform := &MoveFileUriForm{}
 	if err := c.BindUri(uriform); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
 	form := &MoveFileForm{}
 	if err := c.Bind(form); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
@@ -247,7 +248,7 @@ func MoveFile(c *context.APIContext) {
 	file, err := models.GetFileByID(uriform.FileID, userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -257,7 +258,7 @@ func MoveFile(c *context.APIContext) {
 	diretcory, err := models.GetFileByID(form.DirectoryID, userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusNotFound, err)
+			c.Error(http.StatusNotFound, ecode.FileDirNotExists, err)
 		} else {
 			c.InternalServerError(err)
 		}
@@ -266,9 +267,9 @@ func MoveFile(c *context.APIContext) {
 
 	if err := models.MoveFile(file, diretcory); err != nil {
 		if models.IsErrModifyRootFile(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileRootOperateError, err)
 		} else if models.IsErrFileParentNotDirectory(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileParentNotDirError, err)
 		} else {
 			c.InternalServerError(err)
 		}

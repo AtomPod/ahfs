@@ -6,6 +6,7 @@ import (
 
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/context"
+	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 )
 
 type DownloadFileForm struct {
@@ -14,13 +15,13 @@ type DownloadFileForm struct {
 
 func DownloadFile(c *context.APIContext) {
 	if c.User == nil {
-		c.Error(http.StatusUnauthorized, nil)
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
 		return
 	}
 
 	form := &DownloadFileForm{}
 	if err := c.BindUri(form); err != nil {
-		c.Error(http.StatusBadRequest, err)
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
@@ -32,7 +33,7 @@ func DownloadFile(c *context.APIContext) {
 	file, err := models.GetFileByID(form.FileID, userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
-			c.Error(http.StatusBadRequest, err)
+			c.Error(http.StatusBadRequest, ecode.FileNotExist, err)
 			return
 		}
 		c.InternalServerError(err)
@@ -40,7 +41,7 @@ func DownloadFile(c *context.APIContext) {
 	}
 
 	if file.IsDir() {
-		c.Error(http.StatusBadRequest, fmt.Errorf("Cannot download a directory"))
+		c.Error(http.StatusBadRequest, ecode.FileDownloadDirError, fmt.Errorf("Cannot download a directory"))
 		return
 	}
 

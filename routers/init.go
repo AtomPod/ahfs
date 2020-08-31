@@ -4,8 +4,10 @@ import (
 	"context"
 
 	"github.com/czhj/ahfs/models"
+	"github.com/czhj/ahfs/modules/cache"
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
+	"github.com/czhj/ahfs/services/mailer"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
@@ -13,6 +15,8 @@ import (
 
 func NewServices() {
 	setting.NewServices()
+	cache.NewContext()
+	mailer.NewContext()
 }
 
 func initDBEngine(ctx context.Context) (err error) {
@@ -44,4 +48,5 @@ func GlobalInit(ctx context.Context) {
 	} else {
 		log.Info("GORM engine initialization success")
 	}
+
 }

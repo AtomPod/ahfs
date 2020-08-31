@@ -3,7 +3,9 @@ package log
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 
+	"code.gitea.io/gitea/modules/setting"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -23,7 +25,9 @@ func (l *FileLogger) Init(config string) error {
 	if len(l.Filename) == 0 {
 		return fmt.Errorf("config must have filename")
 	}
-
+	if !filepath.IsAbs(l.Filename) {
+		l.Filename = filepath.Join(setting.AppWorkPath, l.Filename)
+	}
 	l.level = NameToLevel(l.Level)
 
 	if len(l.StacktrackLevel) == 0 {

@@ -16,6 +16,7 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			users.GET("/search", context.APIContextWrapper(user.Search))
 			users.POST("/signin", context.APIContextWrapper(user.SignInPost))
 			users.POST("/signup", context.APIContextWrapper(user.SignUpPost))
+			users.POST("/email_active_code", context.APIContextWrapper(user.RequestActiveEmail))
 		}
 		userApi := v1.Group("/user")
 		{

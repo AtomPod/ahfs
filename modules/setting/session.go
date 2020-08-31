@@ -1,6 +1,9 @@
 package setting
 
-import "github.com/spf13/viper"
+import (
+	"github.com/czhj/ahfs/modules/log"
+	"github.com/spf13/viper"
+)
 
 var (
 	SessionConfig = struct {
@@ -38,4 +41,6 @@ func newSessionService() {
 	SessionConfig.Domain = session.GetString("domain")
 	SessionConfig.MaxAge = session.GetInt64("maxAge")
 	SessionConfig.HttpOnly = session.GetBool("httpOnly")
+
+	log.Info("Session Service Enabled")
 }
