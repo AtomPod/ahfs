@@ -255,6 +255,19 @@ func isEmailUsed(e *gorm.DB, email string) (bool, error) {
 	return count != 0, nil
 }
 
+func GetUserByEmail(email string) (*User, error) {
+	user := new(User)
+
+	err := engine.Where("email=?", email).First(user).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, ErrUserNotExist{Email: email}
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
 func GetUserByID(uid uint) (*User, error) {
 	return getUserByID(engine, uid)
 }
