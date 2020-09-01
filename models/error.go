@@ -59,6 +59,22 @@ func (err ErrFileNotExist) Error() string {
 	return fmt.Sprintf("file does not exist [id: %d, path: %s, owner: %d, file_id: %s]", err.ID, err.Path, err.Owner, err.FileID)
 }
 
+type ErrFileAlreadyExist struct {
+	ID     uint
+	Path   string
+	Owner  uint
+	FileID string
+}
+
+func IsErrFileAlreadyExist(err error) bool {
+	_, ok := err.(ErrFileAlreadyExist)
+	return ok
+}
+
+func (err ErrFileAlreadyExist) Error() string {
+	return fmt.Sprintf("file already exist [id: %d, path: %s, owner: %d, file_id: %s]", err.ID, err.Path, err.Owner, err.FileID)
+}
+
 type ErrFileNotDirectory struct {
 	ID   uint
 	Path string

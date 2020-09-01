@@ -16,7 +16,8 @@ type ReadDirectoryUriForm struct {
 }
 
 type ReadDirectoryForm struct {
-	UserID uint `form:"user_id" json:"user_id" binding:"omitempty"`
+	UserID  uint `form:"user_id" query:"user_id" binding:"omitempty"`
+	OnlyDir bool `form:"only_dir" query:"only_dir" binding:"omitempty"`
 }
 
 func ReadDirectory(c *context.APIContext) {
@@ -52,7 +53,9 @@ func ReadDirectory(c *context.APIContext) {
 		return
 	}
 
-	files, err := directory.ReadDir()
+	files, err := directory.ReadDir(models.ReadDirOption{
+		OnlyDir: form.OnlyDir,
+	})
 	if err != nil {
 		if models.IsErrFileNotDirectory(err) {
 			c.Error(http.StatusBadRequest, ecode.FileNotDirError, err)
@@ -104,7 +107,7 @@ func GetUserRootDirectory(c *context.APIContext) {
 		return
 	}
 
-	files, err := root.ReadDir()
+	files, err := root.ReadDir(models.ReadDirOption{})
 	if err != nil {
 		if models.IsErrFileNotDirectory(err) {
 			c.Error(http.StatusNotFound, ecode.FileNotDirError, err)
@@ -207,7 +210,11 @@ func DeleteFile(c *context.APIContext) {
 	}
 
 	if err := models.DeleteFile(file); err != nil {
-		c.InternalServerError(err)
+		if models.IsErrModifyRootFile(err) {
+			c.Error(http.StatusBadRequest, ecode.FileRootOperateError, err)
+		} else {
+			c.InternalServerError(err)
+		}
 		return
 	}
 
@@ -277,4 +284,58 @@ func MoveFile(c *context.APIContext) {
 	}
 
 	c.OK(nil)
+}
+
+type CreateDirForm struct {
+	ParentID      uint   `json:"parent_id" form:"parent_id" binding:"omitempty"`
+	DirectoryName string `json:"directory_name" form:"directory_name" binding:"required,gt=0,lt=256"`
+}
+
+func CreateDirectory(c *context.APIContext) {
+	if !c.IsSigned {
+		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
+		return
+	}
+
+	form := &CreateDirForm{}
+	if err := c.Bind(form); err != nil {
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+		return
+	}
+
+	var dir *models.File
+	var err error
+	if form.ParentID == 0 {
+		dir, err = models.GetUserRootFile(c.User.ID)
+	} else {
+		dir, err = models.GetFileByID(form.ParentID, c.User.ID)
+	}
+
+	if err != nil {
+		if models.IsErrFileNotExist(err) {
+			c.Error(http.StatusBadRequest, ecode.FileParentNotDirError, err)
+		} else {
+			c.InternalServerError(err)
+		}
+		return
+	}
+
+	if !dir.IsDir() {
+		c.Error(http.StatusBadRequest, ecode.FileParentNotDirError, err)
+		return
+	}
+
+	ndir, err := models.CreateDirectory(dir, form.DirectoryName)
+	if err != nil {
+		if models.IsErrFileAlreadyExist(err) {
+			c.Error(http.StatusBadRequest, ecode.FileAlreadyExists, err)
+		} else if models.IsErrFileParentNotDirectory(err) {
+			c.Error(http.StatusBadRequest, ecode.FileParentNotDirError, err)
+		} else {
+			c.InternalServerError(err)
+		}
+		return
+	}
+
+	c.OK(convert.ToFile(ndir))
 }

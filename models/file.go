@@ -58,13 +58,21 @@ func (f *File) FilePath() string {
 	return path.Join(f.FileDir, f.FileName)
 }
 
-func (f *File) ReadDir() ([]*File, error) {
+type ReadDirOption struct {
+	OnlyDir bool
+}
+
+func (f *File) ReadDir(opts ReadDirOption) ([]*File, error) {
 	if !f.IsDir() {
 		return nil, ErrFileNotDirectory{ID: f.ID, Path: f.FilePath()}
 	}
 
 	files := make([]*File, 0)
-	err := engine.Where("parent_id=?", f.ID).Find(&files).Error
+	query := engine.Where("parent_id=?", f.ID)
+	if opts.OnlyDir {
+		query = query.Where("file_type=?", FileTypeDir)
+	}
+	err := query.Find(&files).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil
@@ -138,6 +146,11 @@ func createFile(e *gorm.DB, f *File) error {
 }
 
 func DeleteFile(f *File) error {
+
+	if f.IsRoot() {
+		return ErrModifyRootFile{ID: f.ID, Owner: f.Owner}
+	}
+
 	uid := f.Owner
 	id, err := LockUserFile(context.Background(), uid)
 	if err != nil {
@@ -165,7 +178,7 @@ func DeleteFile(f *File) error {
 func deleteFile(e *gorm.DB, f *File) error {
 
 	if f.IsDir() {
-		files, err := f.ReadDir()
+		files, err := f.ReadDir(ReadDirOption{})
 		if err != nil {
 			return err
 		}
@@ -319,7 +332,7 @@ func moveFile(e *gorm.DB, f *File, dir *File) error {
 	}
 
 	if f.IsDir() {
-		files, err := f.ReadDir()
+		files, err := f.ReadDir(ReadDirOption{})
 		if err != nil {
 			return err
 		}
@@ -345,7 +358,7 @@ func adjustFilepath(e *gorm.DB, f *File, p *File) error {
 	}
 
 	if f.IsDir() {
-		files, err := f.ReadDir()
+		files, err := f.ReadDir(ReadDirOption{})
 		if err != nil {
 			return err
 		}
@@ -398,7 +411,7 @@ func renameFile(e *gorm.DB, f *File) error {
 	}
 
 	if f.IsDir() {
-		files, err := f.ReadDir()
+		files, err := f.ReadDir(ReadDirOption{})
 		if err != nil {
 			return err
 		}
@@ -412,6 +425,67 @@ func renameFile(e *gorm.DB, f *File) error {
 
 	return nil
 
+}
+
+func CreateDirectory(parent *File, dirName string) (*File, error) {
+	uid := parent.Owner
+	id, err := LockUserFile(context.Background(), uid)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := UnlockUserFile(context.Background(), uid, id); err != nil {
+			log.Error("Failed to unlock user file", zap.Uint("id", uid), zap.Uint("uid", uid), zap.Error(err))
+		}
+	}()
+
+	tx := engine.Begin()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	file, err := createDirectory(tx, parent, dirName)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+func createDirectory(e *gorm.DB, parent *File, dirName string) (*File, error) {
+	if !parent.IsDir() {
+		return nil, ErrFileParentNotDirectory{ID: parent.ID, Path: parent.FilePath()}
+	}
+
+	var exist uint
+	err := e.Model(&File{}).Where("parent_id=? AND file_name=? AND file_type=?",
+		parent.ID, dirName, FileTypeDir).Limit(1).Count(&exist).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if exist != 0 {
+		return nil, ErrFileAlreadyExist{Path: path.Join(parent.FilePath(), dirName), Owner: parent.Owner}
+	}
+
+	file := &File{
+		FileID:   utils.GenerateFileID(parent.Owner),
+		FileDir:  parent.FilePath(),
+		FileName: dirName,
+		FileSize: 0,
+		FileType: FileTypeDir,
+		Owner:    parent.Owner,
+		ParentID: parent.ID,
+	}
+
+	if err := e.Create(file).Error; err != nil {
+		return nil, err
+	}
+	return file, nil
 }
 
 func LockUserFile(ctx context.Context, uid uint) (id string, err error) {

@@ -8,4 +8,5 @@ const (
 	FileRootOperateError  ErrorCode = 400204 // 不能对根文件进行操作
 	FileDirNotExists      ErrorCode = 400205 // 文件夹不存在
 	FileParentNotDirError ErrorCode = 400206 // 父结点不是一个文件夹
+	FileAlreadyExists     ErrorCode = 400207 // 文件（夹）已经存在
 )

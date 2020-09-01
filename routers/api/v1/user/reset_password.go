@@ -86,6 +86,11 @@ func ResetPasswordPost(c *context.APIContext) {
 
 	code.RemoveEmailResetPwdCode(form.Email, form.Code)
 
+	if err := models.DeleteAuthTokenByUserID(user.ID); err != nil {
+		c.InternalServerError(err)
+		return
+	}
+
 	authToken := &models.AuthToken{UserID: user.ID}
 	if err := models.CreateAuthToken(authToken); err != nil {
 		c.InternalServerError(fmt.Errorf("CreateAuthToken: Unable to create auth token: %v", err))

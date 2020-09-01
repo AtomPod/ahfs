@@ -144,7 +144,7 @@ func (u *User) GetRootDir() ([]*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return root.ReadDir()
+	return root.ReadDir(ReadDirOption{})
 }
 
 func IsUserExists(uid int64) (bool, error) {

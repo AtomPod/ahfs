@@ -44,6 +44,14 @@ func createAuthToken(e *gorm.DB, t *AuthToken) error {
 	return e.Create(t).Error
 }
 
+func DeleteAuthTokenByUserID(userID uint) error {
+	result := engine.Where("user_id=?", userID).Delete(&AuthToken{})
+	if err := result.Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func DeleteAuthTokenByID(id, userID uint) error {
 	result := engine.Where("id=? AND user_id = ?", id, userID).Delete(&AuthToken{})
 	if err := result.Error; err != nil {
