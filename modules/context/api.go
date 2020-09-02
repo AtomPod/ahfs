@@ -15,6 +15,8 @@ var (
 	APIContextKey = "ahfs-api-context-key"
 )
 
+type APIHandlerFunc func(*APIContext)
+
 type APIContext struct {
 	*Context
 }

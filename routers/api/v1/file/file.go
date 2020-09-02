@@ -21,10 +21,6 @@ type ReadDirectoryForm struct {
 }
 
 func ReadDirectory(c *context.APIContext) {
-	if c.User == nil {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 
 	uriForm := &ReadDirectoryUriForm{}
 	if err := c.BindUri(uriForm); err != nil {
@@ -78,11 +74,6 @@ type UserRootDirForm struct {
 }
 
 func GetUserRootDirectory(c *context.APIContext) {
-	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
-
 	form := &UserRootDirForm{}
 
 	if c.IsAdmin() {
@@ -133,10 +124,6 @@ type RenameFileForm struct {
 }
 
 func RenameFile(c *context.APIContext) {
-	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 
 	uriform := &RenameFileUriForm{}
 	if err := c.BindUri(uriform); err != nil {
@@ -183,10 +170,6 @@ type DeleteFileForm struct {
 }
 
 func DeleteFile(c *context.APIContext) {
-	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 
 	form := &DeleteFileForm{}
 	if err := c.BindUri(form); err != nil {
@@ -230,10 +213,6 @@ type MoveFileForm struct {
 }
 
 func MoveFile(c *context.APIContext) {
-	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 
 	uriform := &MoveFileUriForm{}
 	if err := c.BindUri(uriform); err != nil {
@@ -292,10 +271,6 @@ type CreateDirForm struct {
 }
 
 func CreateDirectory(c *context.APIContext) {
-	if !c.IsSigned {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 
 	form := &CreateDirForm{}
 	if err := c.Bind(form); err != nil {
@@ -338,4 +313,29 @@ func CreateDirectory(c *context.APIContext) {
 	}
 
 	c.OK(convert.ToFile(ndir))
+}
+
+type GetFileInfoForm struct {
+	FileID uint `json:"file_id" uri:"file_id" form:"file_id" binding:"required"`
+}
+
+func GetFileInfo(c *context.APIContext) {
+
+	form := &GetFileInfoForm{}
+	if err := c.BindUri(form); err != nil {
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+		return
+	}
+
+	file, err := models.GetFileByID(form.FileID, 0)
+	if err != nil {
+		if models.IsErrFileNotExist(err) {
+			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
+		} else {
+			c.InternalServerError(err)
+		}
+		return
+	}
+
+	c.OK(convert.ToFile(file))
 }

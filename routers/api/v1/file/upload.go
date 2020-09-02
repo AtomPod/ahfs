@@ -12,10 +12,6 @@ import (
 )
 
 func UploadFile(c *context.APIContext) {
-	if c.User == nil {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 
 	filename := c.PostForm("filename")
 	parentID, _ := strconv.ParseUint(c.PostForm("parent_id"), 10, 64)

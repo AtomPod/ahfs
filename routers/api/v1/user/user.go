@@ -154,9 +154,5 @@ func Search(ctx *context.APIContext) {
 }
 
 func GetAuthenticatedUser(ctx *context.APIContext) {
-	if ctx.User == nil {
-		ctx.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
 	ctx.OK(convert.ToUser(ctx.User, ctx.IsSigned, ctx.User != nil))
 }

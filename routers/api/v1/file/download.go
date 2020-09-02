@@ -14,11 +14,6 @@ type DownloadFileForm struct {
 }
 
 func DownloadFile(c *context.APIContext) {
-	if c.User == nil {
-		c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, nil)
-		return
-	}
-
 	form := &DownloadFileForm{}
 	if err := c.BindUri(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
