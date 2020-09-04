@@ -3,8 +3,9 @@ package models
 import "fmt"
 
 type ErrUserNotExist struct {
-	ID    uint
-	Email string
+	ID       uint
+	Email    string
+	Username string
 }
 
 func IsErrUserNotExist(err error) bool {
@@ -13,7 +14,7 @@ func IsErrUserNotExist(err error) bool {
 }
 
 func (err ErrUserNotExist) Error() string {
-	return fmt.Sprintf("user does not exist [id: %d, email: %s]", err.ID, err.Email)
+	return fmt.Sprintf("user does not exist [id: %d, email: %s, username: %s]", err.ID, err.Email, err.Username)
 }
 
 type ErrEmailAlreadyUsed struct {

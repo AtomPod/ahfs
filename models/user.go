@@ -287,6 +287,19 @@ func GetUserByEmail(email string) (*User, error) {
 	return user, nil
 }
 
+func GetUserByUsername(username string) (*User, error) {
+	user := new(User)
+
+	err := engine.Where("username=?", username).First(user).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, ErrUserNotExist{Username: username}
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
 func GetUserByID(uid uint) (*User, error) {
 	return getUserByID(engine, uid)
 }
@@ -373,9 +386,9 @@ func (opts *SearchUserOptions) Apply(e *gorm.DB) *gorm.DB {
 	if len(opts.Keyword) > 0 {
 		lowerKeyword := strings.ToLower(opts.Keyword)
 		if opts.SearchByEmail {
-			db = db.Where("(LOWER(nickname) = ?) Or (LOWER(email) = ?)", lowerKeyword, lowerKeyword)
+			db = db.Where("(LOWER(nickname) = ?) Or (LOWER(email) = ?) Or (LOWER(username) = ?)", lowerKeyword, lowerKeyword, lowerKeyword)
 		} else {
-			db = db.Where("(LOWER(nickname) = ?)", lowerKeyword)
+			db = db.Where("(LOWER(nickname) = ?) Or (LOWER(username) = ?)", lowerKeyword, lowerKeyword)
 		}
 	}
 

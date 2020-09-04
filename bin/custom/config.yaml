@@ -49,6 +49,7 @@ server:
   rooturl: http://localhost:6270
 service:
   activecodelive: 15m0s
+  avatarmaxsize: 3145728
   maxfilecapacitysize: 536870912
   registeremailconfirm: true
   resetpasswordcodelive: 10m0s
