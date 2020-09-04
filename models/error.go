@@ -29,6 +29,19 @@ func (err ErrEmailAlreadyUsed) Error() string {
 	return fmt.Sprintf("email already used [email: %s]", err.Email)
 }
 
+type ErrUsernameAlreadyUsed struct {
+	Username string
+}
+
+func IsErrUsernameAlreadyUsed(err error) bool {
+	_, ok := err.(ErrUsernameAlreadyUsed)
+	return ok
+}
+
+func (err ErrUsernameAlreadyUsed) Error() string {
+	return fmt.Sprintf("username already used [username: %s]", err.Username)
+}
+
 type ErrModifyRootFile struct {
 	ID    uint
 	Owner uint

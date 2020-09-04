@@ -10,4 +10,6 @@ const (
 	IncorrectUserNameOrPwd ErrorCode = 400107
 	EmailFormatError       ErrorCode = 400108
 	EmailResetPwdCodeError ErrorCode = 400109
+	UserOldPwdIncorrect    ErrorCode = 400110
+	UserAvatarSizeTooLarge ErrorCode = 400111
 )

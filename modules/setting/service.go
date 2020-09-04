@@ -11,6 +11,7 @@ var Service struct {
 	ResetPasswordCodeLive time.Duration
 	RegisterEmailConfirm  bool
 	MaxFileCapacitySize   int64
+	AvatarMaxSize         int64
 }
 
 func newService() {
@@ -19,6 +20,7 @@ func newService() {
 		"resetPasswordCodeLive": time.Duration(10) * time.Minute,
 		"registerEmailConfirm":  true,
 		"maxFileCapacitySize":   1024 * 1024 * 512, //512M
+		"avatarMaxSize":         1024 * 1024 * 3,
 	})
 
 	serviceCfg := viper.Sub("service")
@@ -26,4 +28,5 @@ func newService() {
 	Service.ActiveCodeLive = serviceCfg.GetDuration("activeCodeLive")
 	Service.ResetPasswordCodeLive = serviceCfg.GetDuration("resetPasswordCodeLive")
 	Service.RegisterEmailConfirm = serviceCfg.GetBool("registerEmailConfirm")
+	Service.AvatarMaxSize = serviceCfg.GetInt64("avatarMaxSize")
 }

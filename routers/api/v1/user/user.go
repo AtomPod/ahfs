@@ -97,6 +97,7 @@ func SignUpPost(c *context.APIContext) {
 	}
 
 	user := &models.User{
+		Username:        form.Username,
 		Nickname:        form.Nickname,
 		Email:           form.Email,
 		Type:            models.UserTypeUser,

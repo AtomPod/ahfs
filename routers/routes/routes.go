@@ -25,6 +25,7 @@ func NewEngine() *gin.Engine {
 	engine.Use(ginzap.RecoveryWithZap(log.ZapLogger(), true))
 
 	engine.Static("/static", filepath.Join(setting.StaticRootPath, "public"))
+	engine.Static("/avatars", setting.AvatarUploadPath)
 
 	if setting.EnableGzip {
 		engine.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -43,7 +44,6 @@ func NewEngine() *gin.Engine {
 	}))
 
 	engine.Use(context.Contexter())
-
 	mailer.InitMailTemplate(templates.Mailer())
 
 	return engine

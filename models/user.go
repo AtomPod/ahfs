@@ -8,7 +8,6 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -54,7 +53,7 @@ type User struct {
 }
 
 func (u *User) AvatarLink() string {
-	return strings.TrimRight(setting.AppSubURL, "/") + "/user/avatar/" + strconv.FormatUint(uint64(u.ID), 10) + "/" + "default"
+	return strings.TrimRight(setting.AppSubURL, "/") + "/avatars/" + u.Avatar
 }
 
 func (u *User) AvatarPath() string {
@@ -176,6 +175,13 @@ func CreateUser(u *User) error {
 		return ErrEmailAlreadyUsed{Email: u.Email}
 	}
 
+	used, err = isUsernameUsed(tx, u.Username)
+	if err != nil {
+		return err
+	} else if used {
+		return ErrUsernameAlreadyUsed{Username: u.Username}
+	}
+
 	u.HashPassword(u.Password)
 	if u.MaxFileCapacity == 0 {
 		u.MaxFileCapacity = setting.Service.MaxFileCapacitySize
@@ -255,6 +261,19 @@ func isEmailUsed(e *gorm.DB, email string) (bool, error) {
 	return count != 0, nil
 }
 
+func IsUsernameUsed(username string) (bool, error) {
+	return isUsernameUsed(engine, username)
+}
+
+func isUsernameUsed(e *gorm.DB, username string) (bool, error) {
+	var count int64
+	err := e.Model(&User{}).Where("username=?", username).Limit(1).Count(&count).Error
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		return false, err
+	}
+	return count != 0, nil
+}
+
 func GetUserByEmail(email string) (*User, error) {
 	user := new(User)
 
@@ -301,9 +320,14 @@ func UserSignIn(username string, password string) (*User, error) {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	user := &User{
-		Email: username,
+	user := &User{}
+
+	if strings.Contains(username, "@") {
+		user.Email = username
+	} else {
+		user.Username = username
 	}
+
 	result := tx.Where(user).First(user)
 	if err := result.Error; err != nil {
 		if !gorm.IsRecordNotFoundError(err) {

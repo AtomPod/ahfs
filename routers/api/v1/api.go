@@ -39,6 +39,8 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			userApi.GET("", context.APIContextWrapper(user.GetAuthenticatedUser))
 			userApi.GET("/directory/root", context.APIContextWrapper(file.GetUserRootDirectory))
 			userApi.PUT("/info", context.APIContextWrapper(user.ModifyUserInformation))
+			userApi.PUT("/password", context.APIContextWrapper(user.SignInUserResetPasswordPost))
+			userApi.PUT("/avatar", context.APIContextWrapper(user.UpdateAvatar))
 		}
 
 		files := v1.Group("/files")
