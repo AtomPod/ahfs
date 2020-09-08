@@ -187,6 +187,16 @@ func CreateUser(u *User) error {
 		u.MaxFileCapacity = setting.Service.MaxFileCapacitySize
 	}
 
+	count, err := countUser(tx)
+	if err != nil {
+		return err
+	}
+
+	// first user is admin
+	if count == 0 {
+		u.IsAdmin = true
+	}
+
 	log.Debug("Create user", zap.Any("user", u))
 	if err := tx.Create(u).Error; err != nil {
 		return err
@@ -272,6 +282,19 @@ func isUsernameUsed(e *gorm.DB, username string) (bool, error) {
 		return false, err
 	}
 	return count != 0, nil
+}
+
+func CountUser() (int64, error) {
+	return countUser(engine)
+}
+
+func countUser(e *gorm.DB) (int64, error) {
+	var count int64
+	err := e.Model(&User{}).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func GetUserByEmail(email string) (*User, error) {

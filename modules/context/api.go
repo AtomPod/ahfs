@@ -67,6 +67,10 @@ func (ctx *APIContext) OK(data interface{}) {
 	ctx.JSON(http.StatusOK, errcode.OK, data)
 }
 
+func (ctx *APIContext) Done(status int, data interface{}) {
+	ctx.JSON(status, errcode.OK, data)
+}
+
 func (ctx *APIContext) NotFound(code errcode.ErrorCode, err error) {
 	ctx.Error(http.StatusNotFound, code, err)
 }

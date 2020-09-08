@@ -7,9 +7,11 @@ import (
 
 	"github.com/czhj/ahfs/modules/context"
 	"github.com/czhj/ahfs/modules/limiter"
+	"github.com/czhj/ahfs/routers/api/v1/admin"
 	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 	"github.com/czhj/ahfs/routers/api/v1/file"
 	"github.com/czhj/ahfs/routers/api/v1/user"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +19,17 @@ import (
 func requestSignIn() context.APIHandlerFunc {
 	return func(c *context.APIContext) {
 		if !c.IsSigned {
+			c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, "unauthorized error")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func requestAdmin() context.APIHandlerFunc {
+	return func(c *context.APIContext) {
+		if c.IsAdmin() {
 			c.Error(http.StatusUnauthorized, ecode.UnauthorizedError, "unauthorized error")
 			c.Abort()
 			return
@@ -55,7 +68,7 @@ func RegisterRoutes(e *gin.RouterGroup) {
 		}))
 		users := v1.Group("/users")
 		{
-			users.GET("/list", context.APIContextWrapper(user.Search))
+			//users.GET("/list", context.APIContextWrapper(user.Search))
 			users.POST("/", context.APIContextWrapper(user.SignUpPost))
 			users.POST("/token", context.APIContextWrapper(user.SignInPost))
 			users.PUT("/password", context.APIContextWrapper(user.ResetPasswordPost))
@@ -96,6 +109,13 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			directory.Use(context.APIContextWrapper(requestSignIn()))
 			directory.POST("", context.APIContextWrapper(file.CreateDirectory))
 			directory.GET("/:file_id", context.APIContextWrapper(file.ReadDirectory))
+		}
+
+		adminGroup := v1.Group("/admin", context.APIContextWrapper(requestAdmin()))
+		{
+			usersAdmin := adminGroup.Group("/users")
+			usersAdmin.GET("", context.APIContextWrapper(admin.ListsUser))
+			usersAdmin.DELETE("/:username", context.APIContextWrapper(admin.DeleteUser))
 		}
 	}
 }
