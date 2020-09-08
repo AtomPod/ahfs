@@ -72,3 +72,25 @@ func Delete(key string) error {
 	}
 	return err
 }
+
+func Increment(key string, count uint64) (uint64, error) {
+	result, err := cacheStore.Increment(key, count)
+	if err != nil {
+		if err == persistence.ErrCacheMiss {
+			return 0, ErrNotFound
+		}
+		return 0, err
+	}
+	return result, nil
+}
+
+func Decrement(key string, count uint64) (uint64, error) {
+	result, err := cacheStore.Decrement(key, count)
+	if err != nil {
+		if err == persistence.ErrCacheMiss {
+			return 0, ErrNotFound
+		}
+		return 0, err
+	}
+	return result, nil
+}

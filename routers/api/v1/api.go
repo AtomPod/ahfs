@@ -1,12 +1,16 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/czhj/ahfs/modules/context"
+	"github.com/czhj/ahfs/modules/limiter"
 	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 	"github.com/czhj/ahfs/routers/api/v1/file"
 	"github.com/czhj/ahfs/routers/api/v1/user"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,9 +25,34 @@ func requestSignIn() context.APIHandlerFunc {
 	}
 }
 
+func requestLimiter() context.APIHandlerFunc {
+	return func(c *context.APIContext) {
+		if !c.IsSigned {
+			addr := c.Request.RemoteAddr
+			count, err := limiter.Request(addr, 1, 60*time.Second)
+			if err != nil {
+				c.InternalServerError(err)
+				c.Abort()
+				return
+			}
+
+			if count > 60 {
+				c.Error(http.StatusForbidden, ecode.VisitTooFrequently, fmt.Errorf("Sorry, you are visiting our service too frequent, please try again later."))
+				c.Abort()
+				return
+			}
+		}
+	}
+}
+
 func RegisterRoutes(e *gin.RouterGroup) {
 	v1 := e.Group("/v1")
 	{
+		v1.Use(cors.New(cors.Config{
+			AllowAllOrigins: true,
+			AllowMethods:    []string{"POST", "GET", "PUT", "DELETE"},
+			AllowHeaders:    []string{"Origin"},
+		}))
 		users := v1.Group("/users")
 		{
 			users.GET("/list", context.APIContextWrapper(user.Search))
@@ -33,14 +62,22 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			users.POST("/email_active_code", context.APIContextWrapper(user.RequestActiveEmail))
 			users.POST("/reset_password_code", context.APIContextWrapper(user.RequestResetPwdCode))
 		}
-		userApi := v1.Group("/user")
+
+		currentUser := v1.Group("/current_user")
 		{
-			userApi.Use(context.APIContextWrapper(requestSignIn()))
-			userApi.GET("", context.APIContextWrapper(user.GetAuthenticatedUser))
-			userApi.GET("/directory/root", context.APIContextWrapper(file.GetUserRootDirectory))
-			userApi.PUT("/info", context.APIContextWrapper(user.ModifyUserInformation))
-			userApi.PUT("/password", context.APIContextWrapper(user.SignInUserResetPasswordPost))
-			userApi.PUT("/avatar", context.APIContextWrapper(user.UpdateAvatar))
+			currentUser.Use(context.APIContextWrapper(requestSignIn()))
+			currentUser.GET("", context.APIContextWrapper(user.GetAuthenticatedUser))
+			currentUser.GET("/directory/root", context.APIContextWrapper(file.GetUserRootDirectory))
+			currentUser.PUT("/info", context.APIContextWrapper(user.ModifyUserInformation))
+			currentUser.PUT("/password", context.APIContextWrapper(user.SignInUserResetPasswordPost))
+			currentUser.PUT("/avatar", context.APIContextWrapper(user.UpdateAvatar))
+		}
+
+		userGroup := v1.Group("/user")
+		{
+			userGroup.Use(context.APIContextWrapper(requestLimiter()))
+			userGroup.GET("/:username/info", context.APIContextWrapper(user.GetUserInformation))
+			userGroup.GET("/:username/avatar", context.APIContextWrapper(user.GetUserAvatar))
 		}
 
 		files := v1.Group("/files")

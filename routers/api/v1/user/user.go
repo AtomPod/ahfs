@@ -157,3 +157,35 @@ func Search(ctx *context.APIContext) {
 func GetAuthenticatedUser(ctx *context.APIContext) {
 	ctx.OK(convert.ToUser(ctx.User, ctx.IsSigned, ctx.User != nil))
 }
+
+func GetUserInformation(c *context.APIContext) {
+	username := c.Param("username")
+
+	user, err := models.GetUserByUsername(username)
+	if err != nil {
+		if models.IsErrUserNotExist(err) {
+			c.Error(http.StatusNotFound, ecode.UserNotFound, err)
+		} else {
+			c.InternalServerError(err)
+		}
+		return
+	}
+
+	c.OK(convert.ToUser(user, c.IsSigned, c.User != nil && (c.User.IsAdmin || c.User.ID == user.ID)))
+}
+
+func GetUserAvatar(c *context.APIContext) {
+	username := c.Param("username")
+
+	user, err := models.GetUserByUsername(username)
+	if err != nil {
+		if models.IsErrUserNotExist(err) {
+			c.Error(http.StatusNotFound, ecode.UserNotFound, err)
+		} else {
+			c.InternalServerError(err)
+		}
+		return
+	}
+
+	c.Redirect(http.StatusFound, user.AvatarLink())
+}

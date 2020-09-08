@@ -5,6 +5,7 @@ import (
 
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/cache"
+	"github.com/czhj/ahfs/modules/limiter"
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
 	"github.com/czhj/ahfs/services/mailer"
@@ -16,6 +17,7 @@ import (
 func NewServices() {
 	setting.NewServices()
 	cache.NewContext()
+	limiter.NewContext()
 	mailer.NewContext()
 }
 

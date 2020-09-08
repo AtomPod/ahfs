@@ -58,4 +58,3 @@ func SignInUserResetPasswordPost(c *context.APIContext) {
 
 	c.OK(nil)
 }
-

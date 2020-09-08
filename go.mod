@@ -7,6 +7,7 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668
 	github.com/gin-contrib/cache v1.1.0
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.2
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-contrib/zap v0.0.1
@@ -23,6 +24,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/oliamb/cutter v0.2.2
 	github.com/onsi/ginkgo v1.14.0 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/xid v1.2.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1

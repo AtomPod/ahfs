@@ -6,4 +6,5 @@ const (
 	UnauthorizedError    ErrorCode = 400000
 	ParameterFormatError ErrorCode = 400001
 	PermissionDenied     ErrorCode = 400002
+	VisitTooFrequently   ErrorCode = 400003
 )

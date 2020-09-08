@@ -12,4 +12,5 @@ const (
 	EmailResetPwdCodeError ErrorCode = 400109
 	UserOldPwdIncorrect    ErrorCode = 400110
 	UserAvatarSizeTooLarge ErrorCode = 400111
+	UserNotFound           ErrorCode = 400112
 )
