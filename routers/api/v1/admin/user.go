@@ -66,3 +66,51 @@ func ListsUser(c *context.APIContext) {
 	c.OK(result)
 
 }
+
+func EditUser(c *context.APIContext) {
+
+	username := c.Param("username")
+
+	opts := &api.EditUserOption{}
+	if err := c.Bind(opts); err != nil {
+		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+		return
+	}
+
+	user, err := models.GetUserByUsername(username)
+	if err != nil {
+		if models.IsErrUserNotExist(err) {
+			c.NotFound(ecode.UserNotFound, err)
+		} else {
+			c.InternalServerError(err)
+		}
+		return
+	}
+
+	if opts.Active != nil {
+		user.IsActive = *opts.Active
+	}
+
+	if opts.Admin != nil {
+		user.IsAdmin = *opts.Admin
+	}
+
+	if opts.MustChangePassword != nil {
+		user.MustChangePassword = *opts.MustChangePassword
+	}
+
+	if opts.Nickname != nil {
+		user.Nickname = *opts.Nickname
+	}
+
+	if opts.MaxFileCapacity != nil {
+		user.MaxFileCapacity = *opts.MaxFileCapacity
+	}
+
+	if err := models.SaveUser(user); err != nil {
+		c.InternalServerError(err)
+		return
+	}
+
+	c.OK(convert.ToUser(user, c.IsSigned, c.IsAdmin()))
+}

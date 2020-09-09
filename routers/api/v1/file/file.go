@@ -2,6 +2,7 @@ package file
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/convert"
@@ -11,9 +12,9 @@ import (
 	"github.com/czhj/ahfs/modules/context"
 )
 
-type ReadDirectoryUriForm struct {
-	FileID uint `form:"file_id" uri:"file_id" json:"file_id" binding:"required"`
-}
+// type ReadDirectoryUriForm struct {
+// 	FileID uint `form:"file_id" uri:"file_id" json:"file_id" binding:"required"`
+// }
 
 type ReadDirectoryForm struct {
 	UserID  uint `form:"user_id" query:"user_id" binding:"omitempty"`
@@ -22,8 +23,15 @@ type ReadDirectoryForm struct {
 
 func ReadDirectory(c *context.APIContext) {
 
-	uriForm := &ReadDirectoryUriForm{}
-	if err := c.BindUri(uriForm); err != nil {
+	// uriForm := &ReadDirectoryUriForm{}
+	// if err := c.BindUri(uriForm); err != nil {
+	// 	c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+	// 	return
+	// }
+
+	fileIDParam := c.Param("file_id")
+	fileID, err := strconv.ParseUint(fileIDParam, 10, 64)
+	if err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -39,7 +47,7 @@ func ReadDirectory(c *context.APIContext) {
 		userID = form.UserID
 	}
 
-	directory, err := models.GetFileByID(uriForm.FileID, userID)
+	directory, err := models.GetFileByID(uint(fileID), userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
 			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
@@ -115,9 +123,9 @@ func GetUserRootDirectory(c *context.APIContext) {
 	c.OK(apiFiles)
 }
 
-type RenameFileUriForm struct {
-	FileID uint `form:"file_id" uri:"file_id"  json:"file_id" binding:"required"`
-}
+// type RenameFileUriForm struct {
+// 	FileID uint `form:"file_id" uri:"file_id"  json:"file_id" binding:"required"`
+// }
 
 type RenameFileForm struct {
 	FileName string `form:"filename" json:"filename" binding:"required,min=6,max=32"`
@@ -125,8 +133,16 @@ type RenameFileForm struct {
 
 func RenameFile(c *context.APIContext) {
 
-	uriform := &RenameFileUriForm{}
-	if err := c.BindUri(uriform); err != nil {
+	// uriform := &RenameFileUriForm{}
+	// if err := c.BindUri(uriform); err != nil {
+	// 	c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+	// 	return
+	// }
+
+	// }
+	fileIDParam := c.Param("file_id")
+	fileID, err := strconv.ParseUint(fileIDParam, 10, 64)
+	if err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -142,7 +158,7 @@ func RenameFile(c *context.APIContext) {
 		userID = 0
 	}
 
-	file, err := models.GetFileByID(uriform.FileID, userID)
+	file, err := models.GetFileByID(uint(fileID), userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
 			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
@@ -171,8 +187,14 @@ type DeleteFileForm struct {
 
 func DeleteFile(c *context.APIContext) {
 
-	form := &DeleteFileForm{}
-	if err := c.BindUri(form); err != nil {
+	// form := &DeleteFileForm{}
+	// if err := c.BindUri(form); err != nil {
+	// 	c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+	// 	return
+	// }
+	fileIDParam := c.Param("file_id")
+	fileID, err := strconv.ParseUint(fileIDParam, 10, 64)
+	if err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -182,7 +204,7 @@ func DeleteFile(c *context.APIContext) {
 		userID = 0
 	}
 
-	file, err := models.GetFileByID(form.FileID, userID)
+	file, err := models.GetFileByID(uint(fileID), userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
 			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
@@ -204,9 +226,9 @@ func DeleteFile(c *context.APIContext) {
 	c.OK(nil)
 }
 
-type MoveFileUriForm struct {
-	FileID uint `form:"file_id" uri:"file_id" json:"file_id" binding:"required"`
-}
+// type MoveFileUriForm struct {
+// 	FileID uint `form:"file_id" uri:"file_id" json:"file_id" binding:"required"`
+// }
 
 type MoveFileForm struct {
 	DirectoryID uint `form:"directory_id" json:"directory_id" binding:"required"`
@@ -214,8 +236,15 @@ type MoveFileForm struct {
 
 func MoveFile(c *context.APIContext) {
 
-	uriform := &MoveFileUriForm{}
-	if err := c.BindUri(uriform); err != nil {
+	// uriform := &MoveFileUriForm{}
+	// if err := c.BindUri(uriform); err != nil {
+	// 	c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
+	// 	return
+	// }
+
+	fileIDParam := c.Param("file_id")
+	fileID, err := strconv.ParseUint(fileIDParam, 10, 64)
+	if err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -231,7 +260,7 @@ func MoveFile(c *context.APIContext) {
 		userID = 0
 	}
 
-	file, err := models.GetFileByID(uriform.FileID, userID)
+	file, err := models.GetFileByID(uint(fileID), userID)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
 			c.Error(http.StatusNotFound, ecode.FileNotExist, err)
@@ -321,13 +350,14 @@ type GetFileInfoForm struct {
 
 func GetFileInfo(c *context.APIContext) {
 
-	form := &GetFileInfoForm{}
-	if err := c.BindUri(form); err != nil {
+	fileIDParam := c.Param("file_id")
+	fileID, err := strconv.ParseUint(fileIDParam, 10, 64)
+	if err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
 
-	file, err := models.GetFileByID(form.FileID, 0)
+	file, err := models.GetFileByID(uint(fileID), 0)
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
 			c.Error(http.StatusNotFound, ecode.FileNotExist, err)

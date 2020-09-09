@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/czhj/ahfs/modules/locker"
@@ -21,7 +22,8 @@ import (
 type FileType int
 
 const (
-	FileTypeFile FileType = iota
+	FileTypeNone FileType = iota
+	FileTypeFile
 	FileTypeDir
 )
 
@@ -496,4 +498,69 @@ func LockUserFile(ctx context.Context, uid uint) (id string, err error) {
 func UnlockUserFile(ctx context.Context, uid uint, id string) error {
 	key := fmt.Sprintf("user-%d-file", uid)
 	return locker.Unlock(ctx, key, id)
+}
+
+type SearchFileOptions struct {
+	ListOptions
+	Keyword string
+	Type    FileType
+	FID     uint
+	Owner   uint
+	OrderBy SearchOrderBy
+	Actor   *File
+}
+
+func (opts *SearchFileOptions) Apply(e *gorm.DB) *gorm.DB {
+	db := e.Where("type=?", opts.Type)
+	if len(opts.Keyword) > 0 {
+		lowerKeyword := strings.ToLower(opts.Keyword)
+		db = db.Where("(LOWER(file_name) = ?)", lowerKeyword)
+	}
+
+	if opts.Type != FileTypeNone {
+		db = db.Where("type=?", opts.Type)
+	}
+
+	if opts.Owner != 0 {
+		db = db.Where("owner=?", opts.Owner)
+	}
+
+	if opts.FID > 0 {
+		db = db.Where("id = ?", opts.FID)
+	}
+	return db
+}
+
+func SearchFile(opts *SearchFileOptions) (files []*File, _ int64, _ error) {
+	var count int64
+
+	db := engine.Model(&File{})
+	db = opts.Apply(db)
+	db = db.Count(&count)
+	if err := db.Error; err != nil {
+		return nil, 0, fmt.Errorf("Count: %v", err)
+	}
+
+	if len(opts.OrderBy) == 0 {
+		opts.OrderBy = SearchOrderByAlphabetically
+	}
+
+	db = engine.Model(&File{})
+	db = opts.Apply(db)
+	db = db.Order(opts.OrderBy.String())
+	if opts.Page != 0 {
+		db = opts.SetEnginePagination(db)
+	}
+
+	files = make([]*File, 0, opts.PageSize)
+	err := db.Find(&files).Error
+
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, 0, nil
+		}
+		return nil, 0, err
+	}
+
+	return files, count, nil
 }

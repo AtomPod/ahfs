@@ -81,8 +81,8 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			currentUser.Use(context.APIContextWrapper(requestSignIn()))
 			currentUser.GET("", context.APIContextWrapper(user.GetAuthenticatedUser))
 			currentUser.GET("/directory/root", context.APIContextWrapper(file.GetUserRootDirectory))
-			currentUser.PUT("/info", context.APIContextWrapper(user.ModifyUserInformation))
-			currentUser.PUT("/password", context.APIContextWrapper(user.SignInUserResetPasswordPost))
+			currentUser.PATCH("/", context.APIContextWrapper(user.EditUser))
+			currentUser.PUT("/password", context.APIContextWrapper(user.EditUserPassword))
 			currentUser.PUT("/avatar", context.APIContextWrapper(user.UpdateAvatar))
 		}
 
@@ -116,6 +116,9 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			usersAdmin := adminGroup.Group("/users")
 			usersAdmin.GET("", context.APIContextWrapper(admin.ListsUser))
 			usersAdmin.DELETE("/:username", context.APIContextWrapper(admin.DeleteUser))
+			usersAdmin.PATCH("/:username", context.APIContextWrapper(admin.EditUser))
+			filesAdmin := adminGroup.Group("/files")
+			filesAdmin.GET("", context.APIContextWrapper(admin.ListsFile))
 		}
 	}
 }
