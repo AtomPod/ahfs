@@ -263,4 +263,5 @@ func NewServices() {
 	newSessionService()
 	newMailService()
 	newService()
+	newMetricsService()
 }

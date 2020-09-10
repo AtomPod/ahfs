@@ -17,7 +17,6 @@ log:
     encoding: console
   loggers:
     console:
-      level: debug
       provider: console
 mailer:
   certfile: ""
@@ -30,9 +29,12 @@ mailer:
   queuelength: 512
   sendasplaintext: false
   skipverify: true
-  subjectprefix: '[ahfs]'
+  subjectprefix: ""
   usecertificate: false
   username: 1062008365@qq.com
+metrics:
+  enabled: true
+  token: ""
 server:
   appname: AHFS
   avatarmaxheight: 256

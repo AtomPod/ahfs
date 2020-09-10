@@ -46,3 +46,21 @@ func NewEngine(ctx context.Context, migrateFunc func(*gorm.DB) error) error {
 
 	return nil
 }
+
+type Statistic struct {
+	Counter struct {
+		User, File, TotalFileSize int64
+	}
+}
+
+func GetStatistic() (stats Statistic) {
+	stats.Counter.User, _ = countUser(engine)
+	stats.Counter.File, _ = CountModel(&File{})
+	stats.Counter.TotalFileSize, _ = CountFileSize()
+	return
+}
+
+func CountModel(m interface{}) (count int64, err error) {
+	err = engine.Model(m).Count(&count).Error
+	return
+}

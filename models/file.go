@@ -564,3 +564,18 @@ func SearchFile(opts *SearchFileOptions) (files []*File, _ int64, _ error) {
 
 	return files, count, nil
 }
+
+func CountFileSize() (int64, error) {
+	result := engine.Raw("SELECT sum(file_size) AS size FROM files")
+	sizeStruct := &struct {
+		Size int64 `gorm:"column: size"`
+	}{}
+	if err := result.Scan(&sizeStruct).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return 0, nil
+		}
+		return 0, err
+	}
+	log.Debug("find size: ", zap.Int64("size", sizeStruct.Size))
+	return sizeStruct.Size, nil
+}

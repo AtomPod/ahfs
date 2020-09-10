@@ -4,8 +4,11 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/czhj/ahfs/modules/metrics"
 	"github.com/czhj/ahfs/modules/templates"
+	"github.com/czhj/ahfs/routers"
 	"github.com/gin-contrib/gzip"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/czhj/ahfs/modules/context"
 	"github.com/czhj/ahfs/modules/log"
@@ -45,6 +48,13 @@ func NewEngine() *gin.Engine {
 
 	engine.Use(context.Contexter())
 	mailer.InitMailTemplate(templates.Mailer())
+
+	if setting.Metrics.Enabled {
+		collector := metrics.NewCollector()
+		prometheus.MustRegister(collector)
+
+		engine.GET("/metrics", routers.Metrics)
+	}
 
 	return engine
 }

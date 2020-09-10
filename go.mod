@@ -25,6 +25,7 @@ require (
 	github.com/oliamb/cutter v0.2.2
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/prometheus/client_golang v1.1.0
 	github.com/rs/xid v1.2.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
