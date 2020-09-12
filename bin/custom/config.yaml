@@ -1,6 +1,6 @@
 api:
-  defaultpagingsize: 16
-  maxpagingsize: 32
+  default_paging_size: 16
+  max_paging_size: 32
 cache:
   adapter: memory
   enabled: true
@@ -8,9 +8,9 @@ cache:
   ttl: 24h0m0s
 database:
   driver: sqlite3
-  maxidleconns: 0
-  maxlifetime: 0s
-  maxopenconns: 0
+  max_idle_conns: 0
+  max_life_time: 0s
+  max_open_conns: 0
   url: /db/gorm.db
 log:
   base:
@@ -19,48 +19,49 @@ log:
     console:
       provider: console
 mailer:
+  cert_file: ""
   certfile: ""
   enabled: true
   from: ""
   host: smtp.qq.com:465
-  istlsenable: false
-  keyfile: ""
+  is_tls_enable: false
+  key_file: ""
   password: jqquapwzvqctbbed
-  queuelength: 512
-  sendasplaintext: false
-  skipverify: true
-  subjectprefix: ""
-  usecertificate: false
+  queue_length: 512
+  send_as_plain_text: false
+  skip_verify: true
+  subject_prefix: ""
+  use_certificate: false
   username: 1062008365@qq.com
 metrics:
   enabled: true
   token: ""
 server:
-  appname: AHFS
-  avatarmaxheight: 256
-  avatarmaxwidth: 256
-  avataruploadpath: F:\GOWorkspace\services\ahfs\bin\data\avatar
+  app_name: AHFS
+  avatar_max_height: 256
+  avatar_max_width: 256
+  avatar_upload_path: F:\GOWorkspace\services\ahfs\bin\data\avatar
   domain: localhost
-  enableletsencrypt: false
-  fileuploadpath: F:\GOWorkspace\services\ahfs\bin\data\file
-  httpaddr: 0.0.0.0
-  httpport: "6270"
-  letsencryptdir: https
-  letsencrypttos: false
+  enable_lets_encrypt: false
+  file_upload_path: F:\GOWorkspace\services\ahfs\bin\data\file
+  http_addr: 0.0.0.0
+  http_port: "6270"
+  lets_encrypt_dir: https
+  lets_encrypt_tos: false
   mode: debug
-  rooturl: http://localhost:6270
+  root_url: 'http://localhost:'
 service:
-  activecodelive: 15m0s
-  avatarmaxsize: 3145728
-  maxfilecapacitysize: 536870912
-  registeremailconfirm: true
-  resetpasswordcodelive: 10m0s
+  active_code_live: 15m0s
+  avatar_max_size: 3145728
+  max_file_capacity_size: 536870912
+  register_email_confirm: true
+  reset_password_code_live: 10m0s
 session:
-  cookiename: ahfs_lalala
-  cookiepath: /
+  cookie_name: ahfs_lalala
+  cookie_path: /
   domain: ""
-  httponly: true
-  maxage: 86400
+  http_only: true
+  max_age: 86400
   provider: memory
-  providerconfig: ""
+  provider_config: ""
   secure: false

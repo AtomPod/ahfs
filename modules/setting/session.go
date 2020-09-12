@@ -29,7 +29,7 @@ func newSessionService() {
 		"secure":          false,
 		"http_only":       true,
 		"domain":          "",
-		"maxAge":          86400,
+		"max_age":         86400,
 	})
 
 	session := viper.Sub("session")
@@ -39,7 +39,7 @@ func newSessionService() {
 	SessionConfig.CookiePath = session.GetString("cookie_path")
 	SessionConfig.Secure = session.GetBool("secure")
 	SessionConfig.Domain = session.GetString("domain")
-	SessionConfig.MaxAge = session.GetInt64("maxAge")
+	SessionConfig.MaxAge = session.GetInt64("max_age")
 	SessionConfig.HttpOnly = session.GetBool("http_only")
 
 	log.Info("Session Service Enabled")
