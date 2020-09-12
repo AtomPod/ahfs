@@ -100,8 +100,12 @@ func getAppWorkPath(appPath string) string {
 
 func init() {
 	IsWindows = runtime.GOOS == "windows"
-	log.AddLogger("console", "console", fmt.Sprintf(`{"level": "fatal", "stderr": true}`))
-	log.New(fmt.Sprintf(`{"encoding": "console"}`))
+	if err := log.AddLogger("console", "console", fmt.Sprintf(`{"level": "fatal", "stderr": true}`)); err != nil {
+		panic(err)
+	}
+	if err := log.New(fmt.Sprintf(`{"encoding": "console"}`)); err != nil {
+		panic(err)
+	}
 
 	var err error
 	if AppPath, err = getAppPath(); err != nil {
