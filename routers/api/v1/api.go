@@ -117,8 +117,14 @@ func RegisterRoutes(e *gin.RouterGroup) {
 			usersAdmin.GET("", context.APIContextWrapper(admin.ListsUser))
 			usersAdmin.DELETE("/:username", context.APIContextWrapper(admin.DeleteUser))
 			usersAdmin.PATCH("/:username", context.APIContextWrapper(admin.EditUser))
+
 			filesAdmin := adminGroup.Group("/files")
 			filesAdmin.GET("", context.APIContextWrapper(admin.ListsFile))
+			filesAdmin.GET("/:file_id", context.APIContextWrapper(file.DownloadFile))
+			filesAdmin.GET("/:file_id/info", context.APIContextWrapper(file.GetFileInfo))
+			filesAdmin.PUT("/:file_id/name", context.APIContextWrapper(file.RenameFile))
+			filesAdmin.PUT("/:file_id/directory", context.APIContextWrapper(file.MoveFile))
+			filesAdmin.DELETE("/:file_id", context.APIContextWrapper(file.DeleteFile))
 		}
 	}
 }
