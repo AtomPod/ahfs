@@ -33,19 +33,19 @@ var (
 
 func newMailService() {
 	viper.SetDefault("mailer", map[string]interface{}{
-		"enabled":         false,
-		"queueLength":     512,
-		"subjectPrefix":   "",
-		"sendAsPlainText": false,
-		"from":            "",
-		"host":            "",
-		"username":        "",
-		"password":        "",
-		"skipVerify":      true,
-		"useCertificate":  false,
-		"certFile":        "",
-		"keyFile":         "",
-		"isTLSEnable":     false,
+		"enabled":            false,
+		"queue_length":       512,
+		"subject_prefix":     "",
+		"send_as_plain_text": false,
+		"from":               "",
+		"host":               "",
+		"username":           "",
+		"password":           "",
+		"skip_verify":        true,
+		"use_certificate":    false,
+		"cert_file":          "",
+		"key_file":           "",
+		"is_tls_enable":      false,
 	})
 
 	mailerCfg := viper.Sub("mailer")

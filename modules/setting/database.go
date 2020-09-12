@@ -25,20 +25,20 @@ var (
 
 func newDBService() {
 	viper.SetDefault("database", map[string]interface{}{
-		"driver":       "sqlite3",
-		"url":          "/db/gorm.db",
-		"maxIdleConns": 0,
-		"maxOpenConns": 0,
-		"maxLifeTime":  "0s",
+		"driver":         "sqlite3",
+		"url":            "/db/gorm.db",
+		"max_idle_conns": 0,
+		"max_open_conns": 0,
+		"max_life_time":  "0s",
 	})
 
 	dbcfg := viper.Sub("database")
 
 	Database.Driver = dbcfg.GetString("driver")
 	Database.URL = dbcfg.GetString("url")
-	Database.MaxIdleConns = dbcfg.GetInt("maxIdleConns")
-	Database.MaxOpenConns = dbcfg.GetInt("maxOpenConns")
-	Database.MaxListTime = dbcfg.GetDuration("maxListTime")
+	Database.MaxIdleConns = dbcfg.GetInt("max_idle_conns")
+	Database.MaxOpenConns = dbcfg.GetInt("max_open_conns")
+	Database.MaxListTime = dbcfg.GetDuration("max_life_time")
 
 	if Database.Driver == "sqlite3" {
 		EnableSQLite3 = true

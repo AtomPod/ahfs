@@ -139,7 +139,7 @@ func NewSetting() {
 	viper.SetConfigType(CustomConfigType)
 
 	viper.SetEnvPrefix("ahfs")
-	viper.SetEnvKeyReplacer(strings.NewReplacer("_", "."))
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -157,19 +157,19 @@ func NewSetting() {
 	}
 
 	viper.SetDefault("server", map[string]interface{}{
-		"appName":           "AHFS",
-		"domain":            "localhost",
-		"httpAddr":          "0.0.0.0",
-		"httpPort":          "6270",
-		"enableLetsEncrypt": false,
-		"letsEncryptTOS":    false,
-		"letsEncryptDir":    "https",
-		"mode":              "debug",
-		"avatarMaxWidth":    256,
-		"avatarMaxHeight":   256,
+		"app_name":            "AHFS",
+		"domain":              "localhost",
+		"http_addr":           "0.0.0.0",
+		"http_port":           "6270",
+		"enable_lets_encrypt": false,
+		"lets_encrypt_tos":    false,
+		"lets_encrypt_dir":    "https",
+		"mode":                "debug",
+		"avatar_max_width":    256,
+		"avatar_max_height":   256,
 	})
 	serverCfg := viper.Sub("server")
-	AppName = serverCfg.GetString("appName")
+	AppName = serverCfg.GetString("app_name")
 
 	Protocol = "http"
 	switch serverCfg.GetString("protocol") {
@@ -188,41 +188,41 @@ func NewSetting() {
 	}
 
 	ServerMode = serverCfg.GetString("mode")
-	EnableLetsEncrypt = serverCfg.GetBool("enableLetsEncrypt")
-	LetsEncryptTOS = serverCfg.GetBool("letsEncryptTOS")
+	EnableLetsEncrypt = serverCfg.GetBool("enable_lets_encrypt")
+	LetsEncryptTOS = serverCfg.GetBool("lets_encrypt_tos")
 	if !LetsEncryptTOS {
 		log.Warn("Failed to enable Let's Encrypt due to Let's Encrypt TOS not beging accpeted")
 		EnableLetsEncrypt = false
 	}
-	LetsEncryptDir = serverCfg.GetString("letsEncryptDir")
-	LetsEncryptHost = serverCfg.GetStringSlice("letsEncryptHost")
+	LetsEncryptDir = serverCfg.GetString("lets_encrypt_dir")
+	LetsEncryptHost = serverCfg.GetStringSlice("let_encrypt_host")
 
 	Domain = serverCfg.GetString("domain")
 
-	HTTPAddr = serverCfg.GetString("httpAddr")
-	HTTPPort = serverCfg.GetString("httpPort")
-	EnableGzip = serverCfg.GetBool("enableGZIP")
+	HTTPAddr = serverCfg.GetString("http_addr")
+	HTTPPort = serverCfg.GetString("http_port")
+	EnableGzip = serverCfg.GetBool("enable_gzip")
 
-	serverCfg.SetDefault("staticRootPath", AppWorkPath)
-	serverCfg.SetDefault("appDataPath", path.Join(AppWorkPath, "data"))
-	StaticRootPath = serverCfg.GetString("staticRootPath")
-	AppDataPath = serverCfg.GetString("appDataPath")
+	serverCfg.SetDefault("static_root_path", AppWorkPath)
+	serverCfg.SetDefault("app_data_path", path.Join(AppWorkPath, "data"))
+	StaticRootPath = serverCfg.GetString("static_root_path")
+	AppDataPath = serverCfg.GetString("app_data_path")
 
-	viper.SetDefault("server.avatarUploadPath", filepath.Join(AppDataPath, "avatar"))
-	AvatarUploadPath = viper.GetString("server.avatarUploadPath")
+	viper.SetDefault("server.avatar_upload_path", filepath.Join(AppDataPath, "avatar"))
+	AvatarUploadPath = viper.GetString("server.avatar_upload_path")
 
-	AvatarMaxWidth = serverCfg.GetInt("avatarMaxWidth")
-	AvatarMaxHeight = serverCfg.GetInt("avatarMaxHeight")
+	AvatarMaxWidth = serverCfg.GetInt("avatar_max_width")
+	AvatarMaxHeight = serverCfg.GetInt("avatar_max_height")
 
-	viper.SetDefault("server.fileUploadPath", filepath.Join(AppDataPath, "file"))
-	FileUploadPath = viper.GetString("server.fileUploadPath")
+	viper.SetDefault("server.file_upload_path", filepath.Join(AppDataPath, "file"))
+	FileUploadPath = viper.GetString("server.file_upload_path")
 
 	defaultAppURL := Protocol + "://" + Domain
 	if (Protocol == "http" && HTTPPort != "80") || (Protocol == "https" && HTTPPort != "443") {
 		defaultAppURL = defaultAppURL + ":" + HTTPPort
 	}
-	viper.SetDefault("server.rootURL", defaultAppURL)
-	AppURL = viper.GetString("server.rootURL")
+	viper.SetDefault("server.root_url", defaultAppURL)
+	AppURL = viper.GetString("server.root_url")
 	AppURL = strings.TrimSuffix(AppURL, "/") + "/"
 
 	appURL, err := url.Parse(AppURL)
@@ -236,14 +236,14 @@ func NewSetting() {
 
 func newAPIService() {
 	viper.SetDefault("api", map[string]interface{}{
-		"defaultPagingSize": 16,
-		"maxPagingSize":     32,
+		"default_paging_size": 16,
+		"max_paging_size":     32,
 	})
 
 	apiCfg := viper.Sub("api")
 
-	API.DefaultPagingSize = apiCfg.GetInt("defaultPagingSize")
-	API.MaxPagingSize = apiCfg.GetInt("maxPagingSize")
+	API.DefaultPagingSize = apiCfg.GetInt("default_paging_size")
+	API.MaxPagingSize = apiCfg.GetInt("max_paging_size")
 }
 
 func SaveSetting() {

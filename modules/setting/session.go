@@ -22,25 +22,25 @@ var (
 
 func newSessionService() {
 	viper.SetDefault("session", map[string]interface{}{
-		"provider":       "memory",
-		"providerConfig": "",
-		"cookieName":     "ahfs_lalala",
-		"cookiePath":     "/",
-		"secure":         false,
-		"httpOnly":       true,
-		"domain":         "",
-		"maxAge":         86400,
+		"provider":        "memory",
+		"provider_config": "",
+		"cookie_name":     "ahfs_lalala",
+		"cookie_path":     "/",
+		"secure":          false,
+		"http_only":       true,
+		"domain":          "",
+		"maxAge":          86400,
 	})
 
 	session := viper.Sub("session")
 	SessionConfig.Provider = session.GetString("provider")
-	SessionConfig.ProviderConfig = session.GetString("providerConfig")
-	SessionConfig.CookieName = session.GetString("cookieName")
-	SessionConfig.CookiePath = session.GetString("cookiePath")
+	SessionConfig.ProviderConfig = session.GetString("provider_config")
+	SessionConfig.CookieName = session.GetString("cookie_name")
+	SessionConfig.CookiePath = session.GetString("cookie_path")
 	SessionConfig.Secure = session.GetBool("secure")
 	SessionConfig.Domain = session.GetString("domain")
 	SessionConfig.MaxAge = session.GetInt64("maxAge")
-	SessionConfig.HttpOnly = session.GetBool("httpOnly")
+	SessionConfig.HttpOnly = session.GetBool("http_only")
 
 	log.Info("Session Service Enabled")
 }
