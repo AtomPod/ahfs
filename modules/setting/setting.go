@@ -272,4 +272,5 @@ func NewServices() {
 	newMailService()
 	newService()
 	newMetricsService()
+	newPprofService()
 }

@@ -20,6 +20,9 @@ import (
 
 	"net"
 
+	"net/http"
+	_ "net/http/pprof"
+
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
 	"github.com/czhj/ahfs/routers"
@@ -76,6 +79,15 @@ func runWeb(cmd *cobra.Command, args []string) error {
 	routes.RegisterRoutes(e)
 
 	setting.SaveSetting()
+
+	if setting.PprofService.Enabled {
+		go func() {
+			addr := net.JoinHostPort(setting.PprofService.HTTPAddr, setting.PprofService.HTTPPort)
+			if err := http.ListenAndServe(addr, nil); err != nil {
+				log.Error("Pprof service is shutdown", zap.Error(err))
+			}
+		}()
+	}
 
 	listenAddr := net.JoinHostPort(setting.HTTPAddr, setting.HTTPPort)
 

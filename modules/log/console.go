@@ -43,6 +43,9 @@ func (l *ConsoleLogger) Write(p []byte) (int, error) {
 }
 
 func (l *ConsoleLogger) Sync() error {
+	if l.out == os.Stderr || l.out == os.Stdout {
+		return nil
+	}
 	return l.out.Sync()
 }
 

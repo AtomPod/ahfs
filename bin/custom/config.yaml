@@ -36,6 +36,10 @@ mailer:
 metrics:
   enabled: true
   token: ""
+pprof:
+  enabled: true
+  http_addr: 0.0.0.0
+  http_port: "6060"
 server:
   app_name: AHFS
   avatar_max_height: 256

@@ -57,6 +57,8 @@ func NewEngine() *gin.Engine {
 		engine.GET("/metrics", routers.Metrics)
 	}
 
+
+
 	validator.Register()
 
 	return engine
