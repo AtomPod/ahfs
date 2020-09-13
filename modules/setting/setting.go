@@ -54,6 +54,8 @@ var (
 		DefaultPagingSize int
 		MaxPagingSize     int
 	}
+
+	PasswordComplexity []string
 )
 
 func getAppPath() (string, error) {
@@ -171,6 +173,7 @@ func NewSetting() {
 		"mode":                "debug",
 		"avatar_max_width":    256,
 		"avatar_max_height":   256,
+		"password_complexity": []string{},
 	})
 	serverCfg := viper.Sub("server")
 	AppName = serverCfg.GetString("app_name")
@@ -235,6 +238,7 @@ func NewSetting() {
 	}
 	AppSubURL = strings.TrimSuffix(appURL.Path, "/")
 
+	PasswordComplexity = serverCfg.GetStringSlice("password_complexity")
 	newAPIService()
 }
 

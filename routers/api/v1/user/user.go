@@ -25,7 +25,7 @@ import (
 func SignInPost(c *context.APIContext) {
 
 	form := &auth.SignInForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.IncorrectUserNameOrPwd, err)
 		return
 	}
@@ -53,7 +53,7 @@ func SignInPost(c *context.APIContext) {
 
 func RequestActiveEmail(c *context.APIContext) {
 	form := &auth.RequestActiveEmailForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.EmailFormatError, err)
 		return
 	}
@@ -86,7 +86,7 @@ func RequestActiveEmail(c *context.APIContext) {
 func SignUpPost(c *context.APIContext) {
 
 	form := &auth.SignUpForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}

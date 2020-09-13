@@ -14,7 +14,7 @@ type EditUserOption struct {
 
 func EditUser(c *context.APIContext) {
 	form := &EditUserOption{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, nil)
 		return
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/czhj/ahfs/modules/metrics"
 	"github.com/czhj/ahfs/modules/templates"
+	"github.com/czhj/ahfs/modules/validator"
 	"github.com/czhj/ahfs/routers"
 	"github.com/gin-contrib/gzip"
 	"github.com/prometheus/client_golang/prometheus"
@@ -55,6 +56,8 @@ func NewEngine() *gin.Engine {
 
 		engine.GET("/metrics", routers.Metrics)
 	}
+
+	validator.Register()
 
 	return engine
 }

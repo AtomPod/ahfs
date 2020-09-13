@@ -37,7 +37,7 @@ func ReadDirectory(c *context.APIContext) {
 	}
 
 	form := &ReadDirectoryForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -85,7 +85,7 @@ func GetUserRootDirectory(c *context.APIContext) {
 	form := &UserRootDirForm{}
 
 	if c.IsAdmin() {
-		if err := c.Bind(form); err != nil {
+		if err := c.ShouldBind(form); err != nil {
 			c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 			return
 		}
@@ -148,7 +148,7 @@ func RenameFile(c *context.APIContext) {
 	}
 
 	form := &RenameFileForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -250,7 +250,7 @@ func MoveFile(c *context.APIContext) {
 	}
 
 	form := &MoveFileForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -302,7 +302,7 @@ type CreateDirForm struct {
 func CreateDirectory(c *context.APIContext) {
 
 	form := &CreateDirForm{}
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}

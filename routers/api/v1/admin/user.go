@@ -72,7 +72,7 @@ func EditUser(c *context.APIContext) {
 	username := c.Param("username")
 
 	opts := &api.EditUserOption{}
-	if err := c.Bind(opts); err != nil {
+	if err := c.ShouldBind(opts); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}

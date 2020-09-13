@@ -18,7 +18,7 @@ type updateAvatarForm struct {
 func UpdateAvatar(c *context.APIContext) {
 	form := &updateAvatarForm{}
 
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}

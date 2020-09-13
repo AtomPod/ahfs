@@ -49,6 +49,7 @@ server:
   lets_encrypt_dir: https
   lets_encrypt_tos: false
   mode: debug
+  password_complexity: []
   root_url: 'http://localhost:'
 service:
   active_code_interval: 1m0s

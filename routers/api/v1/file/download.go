@@ -15,7 +15,7 @@ type DownloadFileForm struct {
 
 func DownloadFile(c *context.APIContext) {
 	form := &DownloadFileForm{}
-	if err := c.BindUri(form); err != nil {
+	if err := c.ShouldBindUri(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}

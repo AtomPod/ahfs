@@ -20,7 +20,7 @@ type RequestResetPwdCodeForm struct {
 func RequestResetPwdCode(c *context.APIContext) {
 	form := &RequestResetPwdCodeForm{}
 
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.EmailFormatError, err)
 		return
 	}
@@ -52,13 +52,13 @@ func RequestResetPwdCode(c *context.APIContext) {
 type ResetPwdCodeForm struct {
 	Email    string `json:"email" form:"email" binding:"required,email"`
 	Code     string `json:"code" form:"code" binding:"required"`
-	Password string `json:"password" form:"password" binding:"required,min=6,max=16"`
+	Password string `json:"password" form:"password" binding:"required,password"`
 }
 
 func ResetPasswordPost(c *context.APIContext) {
 	form := &ResetPwdCodeForm{}
 
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
@@ -107,14 +107,14 @@ func ResetPasswordPost(c *context.APIContext) {
 }
 
 type EditUserPasswordForm struct {
-	OldPassword string `json:"old_password" form:"old_password" binding:"required,min=6,max=16"`
-	NewPassword string `json:"new_password" form:"new_password" binding:"required,min=6,max=16"`
+	OldPassword string `json:"old_password" form:"old_password" binding:"required,password"`
+	NewPassword string `json:"new_password" form:"new_password" binding:"required,password"`
 }
 
 func EditUserPassword(c *context.APIContext) {
 	form := &EditUserPasswordForm{}
 
-	if err := c.Bind(form); err != nil {
+	if err := c.ShouldBind(form); err != nil {
 		c.Error(http.StatusBadRequest, ecode.ParameterFormatError, err)
 		return
 	}
