@@ -1,6 +1,7 @@
 package code
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -14,12 +15,21 @@ import (
 type emailCodeType string
 
 var (
-	emailActiveCode   emailCodeType = "email:%s:active:%s"
-	emailResetPwdCode emailCodeType = "email:%s:reset_pwd:%s"
+	emailActiveCode     emailCodeType = "email:%s:active:%s"
+	emailResetPwdCode   emailCodeType = "email:%s:reset_pwd:%s"
+	emailActiveCDCode   emailCodeType = "email:%s:active"
+	emailResetPwdCDCode emailCodeType = "email:%s:reset_pwd"
+)
+
+var (
+	ErrTooOften = errors.New("too often")
 )
 
 func CreateEmailActiveCode(email string) (string, error) {
-	return createEmailCode(email, emailActiveCode, setting.Service.ActiveCodeLive)
+	return createEmailCode(email, emailActiveCode,
+		emailActiveCDCode,
+		setting.Service.ActiveCodeLive,
+		setting.Service.ActiveCodeInterval)
 }
 
 func VerifyEmailActiveCode(email, code string) (bool, error) {
@@ -31,7 +41,10 @@ func RemoveEmailActiveCode(email, code string) {
 }
 
 func CreateEmailResetPwdCode(email string) (string, error) {
-	return createEmailCode(email, emailResetPwdCode, setting.Service.ResetPasswordCodeLive)
+	return createEmailCode(email, emailResetPwdCode,
+		emailResetPwdCDCode,
+		setting.Service.ResetPasswordCodeLive,
+		setting.Service.ResetPasswordCodeInterval)
 }
 
 func VerifyEmailResetPwdCode(email, code string) (bool, error) {
@@ -42,7 +55,17 @@ func RemoveEmailResetPwdCode(email, code string) {
 	removeEmailCode(email, code, emailResetPwdCode)
 }
 
-func createEmailCode(email string, typ emailCodeType, d time.Duration) (string, error) {
+func createEmailCode(email string, typ emailCodeType, cd emailCodeType, d time.Duration, interval time.Duration) (string, error) {
+	if len(cd) != 0 {
+		key := fmt.Sprintf(string(cd), email)
+		if err := cache.SetIfNotExists(key, true, interval); err != nil {
+			if err == cache.ErrKeyExist {
+				return "", ErrTooOften
+			}
+			return "", err
+		}
+	}
+
 	code := utils.RandomCode()
 	key := fmt.Sprintf(string(typ), email, code)
 	if err := cache.Set(key, true, d); err != nil {

@@ -7,6 +7,8 @@ import (
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
+	"github.com/czhj/ahfs/modules/timeutil"
+
 	"go.uber.org/zap"
 )
 
@@ -26,8 +28,8 @@ func InitMailTemplate(bodyTpl *template.Template) {
 func SendUserMail(u *models.User, tpl string, code, subject string) {
 	data := map[string]interface{}{
 		"DisplayName":       u.Nickname,
-		"ActiveCodeLives":   setting.Service.ActiveCodeLive,
-		"ResetPwdCodeLives": setting.Service.ResetPasswordCodeLive,
+		"ActiveCodeLives":   timeutil.FormatDuration(setting.Service.ActiveCodeLive),
+		"ResetPwdCodeLives": timeutil.FormatDuration(setting.Service.ResetPasswordCodeLive),
 		"Code":              code,
 	}
 

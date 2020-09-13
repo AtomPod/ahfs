@@ -51,10 +51,12 @@ server:
   mode: debug
   root_url: 'http://localhost:'
 service:
+  active_code_interval: 1m0s
   active_code_live: 15m0s
   avatar_max_size: 3145728
   max_file_capacity_size: 536870912
   register_email_confirm: true
+  reset_password_code_interval: 1m0s
   reset_password_code_live: 10m0s
 session:
   cookie_name: ahfs_lalala

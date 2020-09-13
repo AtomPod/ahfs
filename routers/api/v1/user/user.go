@@ -70,6 +70,11 @@ func RequestActiveEmail(c *context.APIContext) {
 	}
 
 	activeCode, err := code.CreateEmailActiveCode(form.Email)
+	if err == code.ErrTooOften {
+		c.Error(http.StatusBadRequest, ecode.EmailActiveCodeTooOften, err)
+		return
+	}
+
 	if err != nil {
 		c.InternalServerError(err)
 		return

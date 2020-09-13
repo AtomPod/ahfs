@@ -35,6 +35,11 @@ func RequestResetPwdCode(c *context.APIContext) {
 	}
 
 	resetCode, err := code.CreateEmailResetPwdCode(form.Email)
+	if err == code.ErrTooOften {
+		c.Error(http.StatusBadRequest, ecode.EmailResetPwdCodeTooOften, err)
+		return
+	}
+
 	if err != nil {
 		c.InternalServerError(err)
 		return

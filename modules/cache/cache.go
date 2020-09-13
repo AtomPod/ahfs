@@ -15,6 +15,7 @@ import (
 
 var (
 	ErrNotFound = errors.New("not found")
+	ErrKeyExist = errors.New("key already exists")
 )
 
 var (
@@ -55,6 +56,16 @@ func newCache(config setting.Cache) error {
 
 func Set(key string, val interface{}, d time.Duration) error {
 	return cacheStore.Set(key, val, d)
+}
+
+func SetIfNotExists(key string, val interface{}, d time.Duration) error {
+	if err := cacheStore.Add(key, val, d); err != nil {
+		if err == persistence.ErrNotStored {
+			return ErrKeyExist
+		}
+		return err
+	}
+	return nil
 }
 
 func Get(key string, val interface{}) error {
