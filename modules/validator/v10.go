@@ -14,9 +14,11 @@ var (
 	validateFuncMap = map[string]validator.Func{
 		"password": Password,
 		"username": Username,
+		"nickname": Nickname,
 	}
 
 	usernameRegexp = regexp.MustCompile("^[a-zA-Z0-9_-]{6,16}$")
+	nicknameRegexp = regexp.MustCompile("^[^\\s]{1,16}$")
 )
 
 func Password(fl validator.FieldLevel) bool {
@@ -27,6 +29,11 @@ func Password(fl validator.FieldLevel) bool {
 func Username(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
 	return usernameRegexp.MatchString(username)
+}
+
+func Nickname(fl validator.FieldLevel) bool {
+	nickname := fl.Field().String()
+	return nicknameRegexp.MatchString(nickname)
 }
 
 func Register() {

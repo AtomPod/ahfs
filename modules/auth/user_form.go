@@ -1,7 +1,7 @@
 package auth
 
 type SignUpForm struct {
-	Nickname        string `form:"nickname" json:"nickname" binding:"required,min=4,max=20,alphanum"`
+	Nickname        string `form:"nickname" json:"nickname" binding:"required,nickname"`
 	Username        string `form:"username" json:"username" binding:"required,username"`
 	Email           string `form:"email" json:"email" binding:"required,email"`
 	Password        string `form:"password" json:"password" binding:"required,password"`

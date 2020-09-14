@@ -9,7 +9,7 @@ import (
 )
 
 type EditUserOption struct {
-	Nickname *string `json:"nickname" form:"nickname" binding:"omitempty,gt=0,lt=16"`
+	Nickname *string `json:"nickname" form:"nickname" binding:"omitempty,nickname"`
 }
 
 func EditUser(c *context.APIContext) {
