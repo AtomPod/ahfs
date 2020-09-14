@@ -128,7 +128,7 @@ func GetUserRootDirectory(c *context.APIContext) {
 // }
 
 type RenameFileForm struct {
-	FileName string `form:"filename" json:"filename" binding:"required,min=6,max=32"`
+	FileName string `form:"filename" json:"filename" binding:"required,filename"`
 }
 
 func RenameFile(c *context.APIContext) {
@@ -296,7 +296,7 @@ func MoveFile(c *context.APIContext) {
 
 type CreateDirForm struct {
 	ParentID      uint   `json:"parent_id" form:"parent_id" binding:"omitempty"`
-	DirectoryName string `json:"directory_name" form:"directory_name" binding:"required,gt=0,lt=256"`
+	DirectoryName string `json:"directory_name" form:"directory_name" binding:"required,filename"`
 }
 
 func CreateDirectory(c *context.APIContext) {

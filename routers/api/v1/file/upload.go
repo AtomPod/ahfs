@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/context"
 	"github.com/czhj/ahfs/modules/convert"
+	"github.com/czhj/ahfs/modules/validator"
 	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 )
 
@@ -24,6 +26,11 @@ func UploadFile(c *context.APIContext) {
 	filename = strings.TrimSpace(filename)
 	if len(filename) != 0 {
 		fileHeader.Filename = filename
+	}
+
+	if !validator.ValidFilename(fileHeader.Filename) {
+		c.Error(http.StatusBadRequest, ecode.FilenameFormatError, fmt.Errorf(`filename couldn't containt \/:*?"<>|`))
+		return
 	}
 
 	parentFile, err := models.GetFileByID(uint(parentID), c.User.ID)

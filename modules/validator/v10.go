@@ -15,10 +15,12 @@ var (
 		"password": Password,
 		"username": Username,
 		"nickname": Nickname,
+		"filename": Filename,
 	}
 
 	usernameRegexp = regexp.MustCompile("^[a-zA-Z0-9_-]{6,16}$")
-	nicknameRegexp = regexp.MustCompile("^[^\\s]{1,16}$")
+	nicknameRegexp = regexp.MustCompile(`^[^\s]{1,16}$`)
+	filenameRegexp = regexp.MustCompile(`^[^\/:*?"<>|]{1,256}$`)
 )
 
 func Password(fl validator.FieldLevel) bool {
@@ -34,6 +36,15 @@ func Username(fl validator.FieldLevel) bool {
 func Nickname(fl validator.FieldLevel) bool {
 	nickname := fl.Field().String()
 	return nicknameRegexp.MatchString(nickname)
+}
+
+func Filename(fl validator.FieldLevel) bool {
+	filename := fl.Field().String()
+	return ValidFilename(filename)
+}
+
+func ValidFilename(name string) bool {
+	return filenameRegexp.MatchString(name)
 }
 
 func Register() {
