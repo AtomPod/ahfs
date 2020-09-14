@@ -10,4 +10,5 @@ const (
 	FileParentNotDirError ErrorCode = 400206 // 父结点不是一个文件夹
 	FileAlreadyExists     ErrorCode = 400207 // 文件（夹）已经存在
 	FileTooLarge          ErrorCode = 400208
+	FilenameFormatError   ErrorCode = 400209 // 文件名格式错误
 )
