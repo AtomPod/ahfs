@@ -31,6 +31,7 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
+	github.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518
 	github.com/stretchr/testify v1.6.1
 	github.com/unknwon/com v1.0.1
 	go.uber.org/zap v1.15.0
