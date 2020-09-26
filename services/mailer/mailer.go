@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/czhj/ahfs/modules/log"
+	"github.com/czhj/ahfs/modules/queue"
 	"github.com/czhj/ahfs/modules/setting"
 	"github.com/jaytaylor/html2text"
 	"go.uber.org/zap"
@@ -76,21 +77,36 @@ func NewMessage(to []string, subject, body string) *Message {
 }
 
 var (
-	mailQueue chan *Message
+	mailerQueue queue.Queue
+	Sender      *gomail.Dialer
 )
 
 func NewContext() {
-	if setting.MailerService == nil || mailQueue != nil {
+	if setting.MailerService == nil || mailerQueue != nil {
 		return
 	}
 
-	mailQueue = make(chan *Message, setting.MailerService.QueueLength)
-	go smtpSender()
+	Sender = smtpSender()
+	if Sender == nil {
+		return
+	}
+
+	mailerQueue = queue.CreateQueue("mail", func(data ...queue.Data) {
+		for _, dat := range data {
+			msg := dat.(*Message)
+			message := msg.ToMessage()
+
+			if err := Sender.DialAndSend(message); err != nil {
+				log.Error("Failed to send emails", zap.Strings("To", message.GetHeader("To")), zap.Error(err))
+			} else {
+				log.Debug("E-mails sent", zap.Strings("To", message.GetHeader("To")))
+			}
+		}
+	}, &Message{})
 
 	log.Debug("Mailer service is running")
 }
-
-func smtpSender() {
+func smtpSender() *gomail.Dialer {
 	cfg := setting.MailerService
 
 	host, port, err := net.SplitHostPort(cfg.Host)
@@ -128,42 +144,11 @@ func smtpSender() {
 		dialer.TLSConfig = tlsConfig
 	}
 
-	var sender gomail.SendCloser
-	opened := false
-
-	for {
-		select {
-		case m, ok := <-mailQueue:
-			if !ok {
-				return
-			}
-			if !opened {
-				if sender, err = dialer.Dial(); err != nil {
-					log.Error("Failed to dial stmp server", zap.Error(err))
-				} else {
-					opened = true
-				}
-			}
-			message := m.ToMessage()
-			log.Debug("New e-mail sending request", zap.Strings("To", message.GetHeader("To")))
-			if err := gomail.Send(sender, message); err != nil {
-				log.Error("Failed to send emails", zap.Strings("To", message.GetHeader("To")), zap.Error(err))
-			} else {
-				log.Debug("E-mails sent", zap.Strings("To", message.GetHeader("To")))
-			}
-		case <-time.After(30 * time.Second):
-			if opened {
-				if err := sender.Close(); err != nil {
-					log.Error("Failed to close stmp connection", zap.Error(err))
-				}
-				opened = false
-			}
-		}
-	}
+	return dialer
 }
 
 func SendAsync(msg *Message) {
 	go func() {
-		mailQueue <- msg
+		_ = mailerQueue.Push(msg)
 	}()
 }

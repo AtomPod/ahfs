@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-type Named interface {
-	Name() string
-}
-
 type ManagedPool interface {
 	BoostWorkers() int
 	BoostTimeout() time.Duration
@@ -20,7 +16,7 @@ type ManagedPool interface {
 	MaxNumberOfWorkers() int
 	NumberOfWorkers() int
 	AddWorker(count int, timeout time.Duration) context.CancelFunc
-	SetMaxNumberOfWorkers(t time.Duration)
+	SetMaxNumberOfWorkers(c int)
 	SetManagedSettings(boostNumber int, maxWorkerNumber int, timeout time.Duration)
 }
 
@@ -154,7 +150,9 @@ var (
 
 func GetManager() *Manager {
 	if manager == nil {
-		manager = &Manager{}
+		manager = &Manager{
+			queues: make(map[int64]*ManagedQueue),
+		}
 	}
 	return manager
 }

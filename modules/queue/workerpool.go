@@ -128,6 +128,34 @@ func (p *WorkerPool) pushBoost(data Data) {
 	}
 }
 
+func (p *WorkerPool) commonRegisterWorker(count int, timeout time.Duration) context.CancelFunc {
+	var start time.Time
+	var end time.Time
+	var ctx context.Context
+	var cancel context.CancelFunc
+	if timeout > 0 {
+		start = time.Now()
+		end = start.Add(timeout)
+		ctx, cancel = context.WithTimeout(p.baseCtx, timeout)
+	} else {
+		ctx, cancel = context.WithCancel(p.baseCtx)
+	}
+
+	mq := GetManager().GetManagedQueue(p.qid)
+	if mq != nil {
+		pid := mq.RegisterWorker(count, cancel, start, end, false)
+
+		go func() {
+			<-ctx.Done()
+			mq.RemoveWorker(pid)
+			cancel()
+		}()
+	}
+
+	p.addWorkers(ctx, count)
+	return cancel
+}
+
 func (p *WorkerPool) addWorkers(ctx context.Context, number int) {
 	for i := 0; i < number; i++ {
 		p.m.Lock()
@@ -206,4 +234,59 @@ func (p *WorkerPool) doWork(ctx context.Context) {
 			}
 		}
 	}
+}
+
+func (p *WorkerPool) BoostWorkers() int {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	return p.boostWorkers
+}
+
+func (p *WorkerPool) BoostTimeout() time.Duration {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	return p.boostTimeout
+}
+
+func (p *WorkerPool) BlockTimeout() time.Duration {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	return p.blockTimeout
+}
+
+func (p *WorkerPool) MaxNumberOfWorkers() int {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	return p.maxNumberOfWorkers
+}
+
+func (p *WorkerPool) NumberOfWorkers() int {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	return p.numberOfWorkers
+}
+
+func (p *WorkerPool) SetMaxNumberOfWorkers(count int) {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	p.maxNumberOfWorkers = count
+}
+
+func (p *WorkerPool) SetManagedSettings(boostNumber int, maxWorkerNumber int, timeout time.Duration) {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	p.boostTimeout = timeout
+	p.maxNumberOfWorkers = maxWorkerNumber
+	p.boostWorkers = boostNumber
+}
+
+func (p *WorkerPool) AddWorker(count int, timeout time.Duration) context.CancelFunc {
+	return p.commonRegisterWorker(count, timeout)
 }

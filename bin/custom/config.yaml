@@ -40,6 +40,28 @@ pprof:
   enabled: true
   http_addr: 0.0.0.0
   http_port: "6060"
+queue:
+  default:
+    batch_length: 20
+    block_timeout: 1s
+    boost_timeout: 3m0s
+    boost_worker: 5
+    length: 20
+    max_workers: 10
+    name: default
+    queue_name: default
+    type: channel
+    workers: 1
+  mail:
+    batch_length: 20
+    block_timeout: 1s
+    boost_timeout: 3m0s
+    boost_worker: 5
+    length: 20
+    max_workers: 10
+    name: mail
+    type: channel
+    workers: 1
 server:
   app_name: AHFS
   avatar_max_height: 256
