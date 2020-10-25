@@ -17,6 +17,7 @@ package main
 
 import (
 	"github.com/czhj/ahfs/cmd"
+	_ "github.com/czhj/ahfs/modules/storage/local"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"

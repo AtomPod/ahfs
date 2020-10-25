@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"os"
 	"path"
@@ -14,6 +13,7 @@ import (
 	"github.com/czhj/ahfs/modules/locker"
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
+	"github.com/czhj/ahfs/modules/storage"
 	"github.com/czhj/ahfs/modules/utils"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
@@ -222,11 +222,11 @@ func TryUploadFile(u *User, p *File, header *multipart.FileHeader) (*File, error
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	localPath, file, err := tryUploadFile(tx, u, p, header)
+	fid, file, err := tryUploadFile(tx, u, p, header)
 	if err != nil {
-		if len(localPath) != 0 {
-			if err := os.Remove(localPath); err != nil {
-				log.Error("Failed to remove local file", zap.String("path", localPath), zap.Error(err))
+		if len(fid) != 0 {
+			if err := storage.LFS.Delete(storage.ID(fid)); err != nil && err != storage.ErrNotFound {
+				log.Error("Failed to remove file", zap.String("id", fid), zap.Error(err))
 			}
 		}
 		return nil, err
@@ -245,8 +245,23 @@ func tryUploadFile(e *gorm.DB, u *User, p *File, header *multipart.FileHeader) (
 		return "", nil, ErrFileNotDirectory{ID: p.ID, Path: p.FilePath()}
 	}
 
+	remoteFile, err := header.Open()
+	if err != nil {
+		return "", nil, fmt.Errorf("Failed to open remote file: %v", err)
+	}
+	defer remoteFile.Close()
+
+	id, err := storage.LFS.Write(&storage.Object{
+		Size:   header.Size,
+		Reader: remoteFile,
+	}, storage.WithID(u.ID))
+
+	if err != nil {
+		return "", nil, err
+	}
+
 	file := &File{
-		FileID:   utils.GenerateFileID(u.ID),
+		FileID:   string(id),
 		FileDir:  p.FilePath(),
 		FileName: header.Filename,
 		FileSize: header.Size,
@@ -255,7 +270,7 @@ func tryUploadFile(e *gorm.DB, u *User, p *File, header *multipart.FileHeader) (
 		ParentID: p.ID,
 	}
 
-	err := e.Create(file).Error
+	err = e.Create(file).Error
 	if err != nil {
 		return "", nil, err
 	}
@@ -269,28 +284,7 @@ func tryUploadFile(e *gorm.DB, u *User, p *File, header *multipart.FileHeader) (
 		return "", nil, ErrUserMaxFileCapacityLimit{UserID: u.ID}
 	}
 
-	localPath := file.LocalPath()
-	if err := os.MkdirAll(filepath.Dir(localPath), os.ModePerm); err != nil {
-		return "", nil, fmt.Errorf("Failed to run MkdirAll [%s]: %v", filepath.Dir(localPath), err)
-	}
-
-	remoteFile, err := header.Open()
-	if err != nil {
-		return "", nil, fmt.Errorf("Failed to open remote file: %v", err)
-	}
-	defer remoteFile.Close()
-
-	localFile, err := os.Create(localPath)
-	if err != nil {
-		return "", nil, fmt.Errorf("Failed to create local file [%s]: %v", localPath, err)
-	}
-	defer localFile.Close()
-
-	if _, err := io.Copy(localFile, remoteFile); err != nil {
-		return localPath, nil, fmt.Errorf("Failed to copy remote file to local file [%s]: %v", localPath, err)
-	}
-
-	return localPath, file, nil
+	return string(id), file, nil
 }
 
 func MoveFile(f *File, dir *File) error {

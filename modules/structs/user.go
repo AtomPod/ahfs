@@ -13,4 +13,5 @@ type User struct {
 	LastLoginAt     time.Time `json:"last_login_at"`
 	UsedFileCapcity int64     `json:"used_file_capacity"`
 	MaxFileCapacity int64     `json:"max_file_capacity"`
+	RootFileID      uint      `json:"root_file_id"`
 }

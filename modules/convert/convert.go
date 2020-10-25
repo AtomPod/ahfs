@@ -25,6 +25,7 @@ func ToUser(u *models.User, signed bool, authed bool) *api.User {
 		user.LastLoginAt = u.LastLoginAt
 		user.MaxFileCapacity = u.MaxFileCapacity
 		user.UsedFileCapcity = u.UsedFileCapacity
+
 	}
 	return user
 }
@@ -46,5 +47,6 @@ func ToFile(f *models.File) *api.File {
 		Owner:     f.Owner,
 		FileSize:  f.FileSize,
 		ParentID:  f.ParentID,
+		FileDir:   f.FilePath(),
 	}
 }

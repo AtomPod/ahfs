@@ -33,7 +33,13 @@ func UploadFile(c *context.APIContext) {
 		return
 	}
 
-	parentFile, err := models.GetFileByID(uint(parentID), c.User.ID)
+	var parentFile *models.File
+	if parentID == 0 {
+		parentFile, err = models.GetUserRootFile(c.User.ID)
+	} else {
+		parentFile, err = models.GetFileByID(uint(parentID), c.User.ID)
+	}
+
 	if err != nil {
 		if models.IsErrFileNotExist(err) {
 			c.Error(http.StatusBadRequest, ecode.FileNotExist, err)

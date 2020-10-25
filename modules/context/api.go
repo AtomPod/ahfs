@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/czhj/ahfs/modules/log"
+	"github.com/czhj/ahfs/modules/storage"
 	"github.com/czhj/ahfs/routers/api/v1/errcode"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -51,6 +52,26 @@ func (ctx *APIContext) File(filename string, localPath string) {
 	}
 
 	ctx.DataFromReader(http.StatusOK, fi.Size(), "application/octet-stream", file,
+		map[string]string{
+			"Content-Disposition": fmt.Sprintf("attachment; filename=\"%s\"", filename),
+		})
+}
+
+func (ctx *APIContext) Storage(filename string, id storage.ID, fileStorage storage.Storage) {
+	fileObj, err := fileStorage.Read(id)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
+	}
+	file := fileObj.Reader
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Error("Failed to close file", zap.String("id", string(id)), zap.Error(err))
+		}
+	}()
+
+	ctx.DataFromReader(http.StatusOK, fileObj.Size, "application/octet-stream", file,
 		map[string]string{
 			"Content-Disposition": fmt.Sprintf("attachment; filename=\"%s\"", filename),
 		})

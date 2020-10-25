@@ -1,6 +1,7 @@
 package mailer
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
 	"strconv"
@@ -104,6 +105,11 @@ func NewContext() {
 		}
 	}, &Message{})
 
+	mailerQueue.Run(func(c context.Context, f func()) {
+		f()
+	}, func(c context.Context, f func()) {
+		f()
+	})
 	log.Debug("Mailer service is running")
 }
 func smtpSender() *gomail.Dialer {

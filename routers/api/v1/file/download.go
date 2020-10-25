@@ -6,6 +6,7 @@ import (
 
 	"github.com/czhj/ahfs/models"
 	"github.com/czhj/ahfs/modules/context"
+	"github.com/czhj/ahfs/modules/storage"
 	ecode "github.com/czhj/ahfs/routers/api/v1/errcode"
 )
 
@@ -40,5 +41,5 @@ func DownloadFile(c *context.APIContext) {
 		return
 	}
 
-	c.File(file.FileName, file.LocalPath())
+	c.Storage(file.FileName, storage.ID(file.FileID), storage.LFS)
 }

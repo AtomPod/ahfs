@@ -8,6 +8,8 @@ import (
 	"github.com/czhj/ahfs/modules/limiter"
 	"github.com/czhj/ahfs/modules/log"
 	"github.com/czhj/ahfs/modules/setting"
+	"github.com/czhj/ahfs/modules/storage"
+
 	"github.com/czhj/ahfs/services/mailer"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -49,6 +51,12 @@ func GlobalInit(ctx context.Context) {
 		log.Fatal("GORM engine initalization failed", zap.Error(err))
 	} else {
 		log.Info("GORM engine initialization success")
+	}
+
+	if err := storage.Init(); err != nil {
+		log.Fatal("Storage initalization failed", zap.Error(err))
+	} else {
+		log.Info("Storage initialization success")
 	}
 
 }

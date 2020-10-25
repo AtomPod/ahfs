@@ -274,4 +274,5 @@ func NewServices() {
 	newMetricsService()
 	newPprofService()
 	newQueueService()
+	newLFSService()
 }
