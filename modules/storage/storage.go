@@ -56,6 +56,7 @@ type ReadOptions struct {
 type ReadOption func(*ReadOptions)
 
 type Object struct {
+	Name   string
 	Size   int64
 	Reader io.ReadCloser
 }

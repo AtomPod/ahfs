@@ -15,7 +15,7 @@ import (
 const LocalStorageType storage.Type = "local"
 
 type LocalStorageConfig struct {
-	Directory string `json: "directory"`
+	Directory string `json:"directory"`
 }
 
 func (c LocalStorageConfig) GetDirectory() string {
