@@ -213,3 +213,47 @@ func IsErrAuthTokenEmpty(err error) bool {
 func (e ErrAuthTokenEmpty) Error() string {
 	return fmt.Sprintf("auth token cannot be empty")
 }
+
+type ErrMessageSenderNotExist struct {
+	ID   uint
+	Role MessageRoleType
+}
+
+func IsErrMessageSendNotExist(err error) bool {
+	_, ok := err.(ErrMessageReceiverNotExist)
+	return ok
+}
+
+func (e ErrMessageSenderNotExist) Error() string {
+	roleString := "user"
+	switch e.Role {
+	case MessageRoleGroup:
+		roleString = "group"
+	case MessageRoleUser:
+		roleString = "user"
+	}
+
+	return fmt.Sprintf("message sender not exist [id: %d, role: %s]", e.ID, roleString)
+}
+
+type ErrMessageReceiverNotExist struct {
+	ID   uint
+	Role MessageRoleType
+}
+
+func IsErrMessageReceiverNotExist(err error) bool {
+	_, ok := err.(ErrMessageReceiverNotExist)
+	return ok
+}
+
+func (e ErrMessageReceiverNotExist) Error() string {
+	roleString := "user"
+	switch e.Role {
+	case MessageRoleGroup:
+		roleString = "group"
+	case MessageRoleUser:
+		roleString = "user"
+	}
+
+	return fmt.Sprintf("message receiver not exist [id: %d, role: %s]", e.ID, roleString)
+}

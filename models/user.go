@@ -327,6 +327,34 @@ func GetUserByUsername(username string) (*User, error) {
 	return user, nil
 }
 
+func GetNicknamesByID(uids []uint) (map[uint]string, error) {
+	idMaps := make(map[uint]bool)
+	ids := make([]uint, 0)
+
+	for _, uid := range uids {
+		if _, ok := idMaps[uid]; !ok {
+			ids = append(ids, uid)
+			idMaps[uid] = true
+		}
+	}
+
+	users := make([]*User, 0)
+	if err := engine.Select("nickname", "id").
+		Where("id IN ?", ids).Find(&users).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	nicknames := make(map[uint]string)
+	for _, user := range users {
+		nicknames[user.ID] = user.Nickname
+	}
+
+	return nicknames, nil
+}
+
 func GetUserByID(uid uint) (*User, error) {
 	return getUserByID(engine, uid)
 }

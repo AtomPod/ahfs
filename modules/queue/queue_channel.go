@@ -47,7 +47,7 @@ func NewChannelQueue(handle HandleFunc, cfg, exemplar interface{}) (Queue, error
 
 func (q *ChannelQueue) Run(atShutdown, atTerminate func(context.Context, func())) {
 	atShutdown(context.Background(), func() {
-		log.Warn("ChannelQueue is not shuwdownable!", zap.String("name", q.name))
+		log.Warn("ChannelQueue is not shutdownable!", zap.String("name", q.name))
 	})
 
 	atTerminate(context.Background(), func() {
